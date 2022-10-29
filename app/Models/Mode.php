@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * App\Models\Modes
+ * App\Models\Mode
  *
  * @property int $id
  * @property string $name
@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Mode whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Mode whereUpdatedAt($value)
  * @mixin \Eloquent
- * @mixin IdeHelperModes
  */
 class Mode extends Model
 {

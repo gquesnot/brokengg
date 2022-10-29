@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Barryvdh\LaravelIdeHelper\Eloquent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -12,7 +11,6 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int $won
- * @property int $champion_id
  * @property float $kill_participation
  * @property float $kda
  * @property int $assists
@@ -23,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property array $stats
  * @property int $minions_killed
  * @property int $largest_killing_spree
+ * @property int $champion_id
  * @property int $summoner_id
  * @property int $match_id
  * @property int $double_kills
@@ -58,8 +57,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereSummonerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereTripleKills($value)
  * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereWon($value)
- * @mixin Eloquent
- * @mixin IdeHelperSummonerMatch
+ * @mixin \Eloquent
  */
 class SummonerMatch extends Model
 {

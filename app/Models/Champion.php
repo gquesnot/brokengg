@@ -30,7 +30,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder|Champion whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Champion whereUpdatedAt($value)
  * @mixin \Eloquent
- * @mixin IdeHelperChampion
  */
 class Champion extends Model
 {

@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|SummonerLeague whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|SummonerLeague whereUpdatedAt($value)
  * @mixin \Eloquent
- * @mixin IdeHelperSummonerLeague
  */
 class SummonerLeague extends Model
 {

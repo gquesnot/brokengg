@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Version whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Version whereUpdatedAt($value)
  * @mixin \Eloquent
- * @mixin IdeHelperVersion
  */
 class Version extends Model
 {

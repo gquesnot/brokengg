@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch wherePosition($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch whereSummonerMatchId($value)
  * @mixin \Eloquent
- * @mixin IdeHelperItemSummonerMatch
  */
 class ItemSummonerMatch extends Model
 {

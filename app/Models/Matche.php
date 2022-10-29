@@ -40,7 +40,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Matche whereUpdated($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Matche whereUpdatedAt($value)
  * @mixin \Eloquent
- * @mixin IdeHelperMatche
  */
 class Matche extends Model
 {

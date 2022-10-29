@@ -25,7 +25,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Item whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Item whereUpdatedAt($value)
  * @mixin \Eloquent
- * @mixin IdeHelperItem
  */
 class Item extends Model
 {

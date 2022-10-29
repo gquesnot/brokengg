@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Map whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Map whereUpdatedAt($value)
  * @mixin \Eloquent
- * @mixin IdeHelperMap
  */
 class Map extends Model
 {

@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Queue whereMap($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Queue whereUpdatedAt($value)
  * @mixin \Eloquent
- * @mixin IdeHelperQueue
  */
 class Queue extends Model
 {

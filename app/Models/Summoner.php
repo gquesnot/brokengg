@@ -26,23 +26,22 @@ use Illuminate\Support\Facades\DB;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
  *
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner query()
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereAccountId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereAutoUpdate($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereLastScannedMatch($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereProfileIconId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner wherePuuid($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereRevisionDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereSummonerId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereSummonerLevel($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereUpdatedAt($value)
+ * @method static Builder|Summoner newModelQuery()
+ * @method static Builder|Summoner newQuery()
+ * @method static Builder|Summoner query()
+ * @method static Builder|Summoner whereAccountId($value)
+ * @method static Builder|Summoner whereAutoUpdate($value)
+ * @method static Builder|Summoner whereCreatedAt($value)
+ * @method static Builder|Summoner whereId($value)
+ * @method static Builder|Summoner whereLastScannedMatch($value)
+ * @method static Builder|Summoner whereName($value)
+ * @method static Builder|Summoner whereProfileIconId($value)
+ * @method static Builder|Summoner wherePuuid($value)
+ * @method static Builder|Summoner whereRevisionDate($value)
+ * @method static Builder|Summoner whereSummonerId($value)
+ * @method static Builder|Summoner whereSummonerLevel($value)
+ * @method static Builder|Summoner whereUpdatedAt($value)
  * @mixin \Eloquent
- * @mixin IdeHelperSummoner
  */
 class Summoner extends Model
 {

@@ -25,7 +25,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Tier wherePosition($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tier whereUpdatedAt($value)
  * @mixin \Eloquent
- * @mixin IdeHelperTier
  */
 class Tier extends Model
 {
