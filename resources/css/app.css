@@ -1,0 +1,28 @@
+@import "@fortawesome/fontawesome-free/css/fontawesome.css";
+@import "@fortawesome/fontawesome-free/css/solid.css";
+@import "@fortawesome/fontawesome-free/css/regular.css";
+@import "@fortawesome/fontawesome-free/css/brands.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind screens;
+@tailwind forms;
+
+
+
+[x-cloak] {
+    display: none;
+}
+
+.nav-element{
+    @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm;
+}
+.nav-element-selected{
+    @apply border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm;
+}
+input:invalid, textarea:invalid, select:invalid {
+    box-shadow: none;
+}
+
+
