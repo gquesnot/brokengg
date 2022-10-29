@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 
 /**
  * App\Models\Matche
@@ -26,19 +28,20 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $participants_count
  * @property-read \App\Models\Queue|null $queue
  *
- * @method static \Illuminate\Database\Eloquent\Builder|Matche newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Matche newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Matche query()
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereMapId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereMatchCreation($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereMatchDuration($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereMatchId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereModeId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereQueueId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereUpdated($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereUpdatedAt($value)
+ * @method static Builder|Matche filters($filters)
+ * @method static Builder|Matche newModelQuery()
+ * @method static Builder|Matche newQuery()
+ * @method static Builder|Matche query()
+ * @method static Builder|Matche whereCreatedAt($value)
+ * @method static Builder|Matche whereId($value)
+ * @method static Builder|Matche whereMapId($value)
+ * @method static Builder|Matche whereMatchCreation($value)
+ * @method static Builder|Matche whereMatchDuration($value)
+ * @method static Builder|Matche whereMatchId($value)
+ * @method static Builder|Matche whereModeId($value)
+ * @method static Builder|Matche whereQueueId($value)
+ * @method static Builder|Matche whereUpdated($value)
+ * @method static Builder|Matche whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class Matche extends Model
@@ -78,6 +81,23 @@ class Matche extends Model
         $res .= $duration->second.'s';
 
         return $res;
+    }
+
+    public function scopeFilters(Builder $query, $filters): Builder
+    {
+        if (! empty($filters)) {
+            if (Arr::get($filters, 'queue') != null) {
+                $query = $query->where('queue_id', $filters['queue']);
+            }
+            if (Arr::get($filters, 'dateStart') != null) {
+                $query = $query->where('match_creation', '>=', $filters['dateStart']);
+            }
+            if (Arr::get($filters, 'dateEnd') != null) {
+                $query = $query->where('match_creation', '<=', $filters['dateEnd']);
+            }
+        }
+
+        return $query;
     }
 
     public function participants()

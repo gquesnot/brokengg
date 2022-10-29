@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Helpers\Stats;
 use App\Models\Summoner;
 use App\Models\SummonerMatch;
 use App\Traits\PaginateTrait;
@@ -17,8 +18,6 @@ class Matches extends Component
     public Summoner $me;
 
     public $version;
-
-    public $stats = null;
 
     public $filters = null;
 
@@ -80,45 +79,25 @@ class Matches extends Component
 
             return $match;
         });
+        $stats = new Stats(
+            SummonerMatch::whereIn('match_id', $matchIds)
+                ->whereSummonerId($this->me->id)
+                ->select([
+                    'kills',
+                    'deaths',
+                    'assists',
+                    'kda',
+                    'minions_killed',
+                    'kill_participation',
+                    'won',
+                    'match_id',
+                    'champion_id',
+                    'id',
+                ])->get()
+        );
 
-        $this->stats = $this->getStat($matchIds);
         $paginator = new LengthAwarePaginator($matches, $matchIds->count(), $this->perPage, $this->page);
 
-        return view('livewire.matches', ['matches' => $paginator]);
-    }
-
-    public function getStat($matchIds)
-    {
-        $matches = SummonerMatch::whereIn('match_id', $matchIds)
-            ->where('summoner_id', $this->me->id)
-            ->select(
-                'kill_participation',
-                'kda',
-                'won'
-            )
-            ->get();
-        $tmp = [
-            'kill_participation' => 0,
-            'kda' => 0,
-            'game_won' => 0,
-            'win_percent' => 0,
-            'game_lose' => 0,
-            'game_played' => 0,
-            'lose' => 0,
-        ];
-        if (! $matches->isEmpty()) {
-            foreach ($matches as $match) {
-                $tmp['kill_participation'] += $match->kill_participation;
-                $tmp['kda'] += $match->kda;
-                $tmp['game_won'] += $match->won;
-                $tmp['game_lose'] += ! $match->won;
-                $tmp['game_played'] += 1;
-            }
-            $tmp['kill_participation'] = round($tmp['kill_participation'] / $tmp['game_played'] * 100);
-            $tmp['kda'] = round($tmp['kda'] / $tmp['game_played'], 2);
-            $tmp['win_percent'] = round($tmp['game_won'] / $tmp['game_played'] * 100);
-        }
-
-        return $tmp;
+        return view('livewire.matches', ['matches' => $paginator, 'stats' => $stats]);
     }
 }

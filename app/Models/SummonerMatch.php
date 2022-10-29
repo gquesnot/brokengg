@@ -2,9 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * App\Models\SummonerMatch
@@ -29,41 +34,42 @@ use Illuminate\Support\Carbon;
  * @property int $quadra_kills
  * @property int $penta_kills
  * @property-read \App\Models\Champion|null $champion
- * @property-read mixed $cs_per_minute
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Item[] $items
  * @property-read int|null $items_count
  * @property-read \App\Models\Matche|null $match
  * @property-read \App\Models\Summoner|null $summoner
  *
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch query()
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereAssists($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereChallenges($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereChampLevel($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereChampionId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereDeaths($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereDoubleKills($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereKda($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereKillParticipation($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereKills($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereLargestKillingSpree($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereMatchId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereMinionsKilled($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch wherePentaKills($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereQuadraKills($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereStats($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereSummonerId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereTripleKills($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereWon($value)
+ * @method static Builder|SummonerMatch championsCalc($championIds)
+ * @method static Builder|SummonerMatch filters($filters)
+ * @method static Builder|SummonerMatch newModelQuery()
+ * @method static Builder|SummonerMatch newQuery()
+ * @method static Builder|SummonerMatch query()
+ * @method static Builder|SummonerMatch whereAssists($value)
+ * @method static Builder|SummonerMatch whereChallenges($value)
+ * @method static Builder|SummonerMatch whereChampLevel($value)
+ * @method static Builder|SummonerMatch whereChampionId($value)
+ * @method static Builder|SummonerMatch whereDeaths($value)
+ * @method static Builder|SummonerMatch whereDoubleKills($value)
+ * @method static Builder|SummonerMatch whereId($value)
+ * @method static Builder|SummonerMatch whereKda($value)
+ * @method static Builder|SummonerMatch whereKillParticipation($value)
+ * @method static Builder|SummonerMatch whereKills($value)
+ * @method static Builder|SummonerMatch whereLargestKillingSpree($value)
+ * @method static Builder|SummonerMatch whereMatchId($value)
+ * @method static Builder|SummonerMatch whereMinionsKilled($value)
+ * @method static Builder|SummonerMatch wherePentaKills($value)
+ * @method static Builder|SummonerMatch whereQuadraKills($value)
+ * @method static Builder|SummonerMatch whereStats($value)
+ * @method static Builder|SummonerMatch whereSummonerId($value)
+ * @method static Builder|SummonerMatch whereTripleKills($value)
+ * @method static Builder|SummonerMatch whereWon($value)
  * @mixin \Eloquent
  */
 class SummonerMatch extends Model
 {
     use HasFactory;
 
-    public $appends = ['csPerMinute'];
+    //public $appends = ['cs_per_minute'];
 
     public $timestamps = false;
 
@@ -93,14 +99,174 @@ class SummonerMatch extends Model
         'challenges' => 'array',
     ];
 
-    public function getCsPerMinuteAttribute()
+    public function csPerMinute(): Attribute
     {
-        $minutes = Carbon::createFromTimeString($this->match->getRawOriginal('match_duration'))->minute;
-        if ($minutes > 0) {
-            return round($this->minions_killed / $minutes, 1);
-        } else {
-            return $this->minions_killed;
+        return Attribute::make(
+            get: function () {
+                $minutes = Carbon::createFromTimeString($this->match->getRawOriginal('match_duration'))->minute;
+
+                return $minutes > 0 ? round($this->minions_killed / $minutes) : $this->minions_killed;
+            }
+        );
+    }
+
+    public function winrate(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => round($this->wins / $this->total * 100, 2),
+        );
+    }
+
+    public function loses(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->total - $this->wins,
+        );
+    }
+
+    public function avgKda(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => round(($this->avg_kills + $this->avg_assists) / $this->avg_deaths, 2),
+        );
+    }
+
+    public function wins(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => intval($value),
+        );
+    }
+
+    public function avgKills(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => round(floatval($value), 2),
+        );
+    }
+
+    public function avgDeaths(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => round(floatval($value), 2),
+        );
+    }
+
+    public function avgAssists(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => round(floatval($value), 2),
+        );
+    }
+
+    public function avgCs(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => intval($value),
+        );
+    }
+
+    public function avgDamageDealtToChampions(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => intval($value),
+        );
+    }
+
+    public function avgGold(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => intval($value),
+        );
+    }
+
+    public function avgDamageTaken(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => intval($value),
+        );
+    }
+
+    public function totalDoubleKills(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => intval($value),
+        );
+    }
+
+    public function totalTripleKills(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => intval($value),
+        );
+    }
+
+    public function totalQuadraKills(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => intval($value),
+        );
+    }
+
+    public function totalPentaKills(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => intval($value),
+        );
+    }
+
+    public function scopeFilters(Builder $query, $filters): Builder
+    {
+        if (! empty($filters)) {
+            if (Arr::get($filters, 'queue') != null || Arr::get($filters, 'dateStart') != null || Arr::get($filters, 'dateEnd') != null) {
+                $query = $query->whereHas('match', function (Builder $query) use ($filters) {
+                    if (Arr::get($filters, 'queue') != null) {
+                        $query->where('queue_id', $filters['queue']);
+                    }
+                    if (Arr::get($filters, 'dateStart') != null) {
+                        $query->where('match_creation', '>=', $filters['dateStart']);
+                    }
+                    if (Arr::get($filters, 'dateEnd') != null) {
+                        $query->where('match_creation', '<=', $filters['dateEnd']);
+                    }
+                });
+            }
+            if (Arr::get($filters, 'champion') != null) {
+                $query->where('champion_id', $filters['champion']);
+            }
         }
+
+        return $query;
+    }
+
+    public static function getStats(Collection $matches)
+    {
+    }
+
+    public function scopeChampionsCalc(Builder $query, $championIds)
+    {
+        return $query->select('champion_id',
+            DB::raw('count(*) as total'),
+            DB::raw('sum(won) as wins'),
+            DB::raw('avg(kills) as avg_kills'),
+            DB::raw('avg(deaths) as avg_deaths'),
+            DB::raw('avg(assists) as avg_assists'),
+            DB::raw('avg(minions_killed) as avg_cs'),
+            DB::raw('max(kills) as max_kills'),
+            DB::raw('max(deaths) as max_deaths'),
+            DB::raw('max(assists) as max_assists'),
+            DB::raw('avg(JSON_EXTRACT(stats, "$.total_damage_dealt_to_champions")) as avg_damage_dealt_to_champions'),
+            DB::raw('avg(JSON_EXTRACT(stats, "$.gold_earned")) as avg_gold'),
+            DB::raw('avg(JSON_EXTRACT(stats, "$.total_damage_taken")) as avg_damage_taken'),
+            DB::raw('sum(double_kills) as total_double_kills'),
+            DB::raw('sum(triple_kills) as total_triple_kills'),
+            DB::raw('sum(quadra_kills) as total_quadra_kills'),
+            DB::raw('sum(penta_kills) as total_penta_kills'),
+        )
+            ->with('champion:id,name,img_url')
+            ->whereIn('champion_id', $championIds)
+            ->groupBy('champion_id')
+            ->orderBy('total', 'desc');
     }
 
     public function items()

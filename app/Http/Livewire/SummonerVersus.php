@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Helpers\Stats;
 use App\Traits\PaginateTrait;
 use App\Traits\QueryParamsTrait;
 use Livewire\Component;
@@ -16,8 +17,6 @@ class SummonerVersus extends Component
     public $other;
 
     public $version;
-
-    public $stats = null;
 
     public $with = 'with';
 
@@ -41,11 +40,13 @@ class SummonerVersus extends Component
 
     public function render()
     {
+        $stats = ['me' => null, 'other' => null];
         if ($this->other != null) {
             $details = $this->me->versus($this->other, $this->filters)->filter(function ($detail) {
                 return ($detail->me->won == $detail->other->won) == ($this->with == 'with');
             });
-            $this->getStats($details);
+            $stats['me'] = new Stats($details->pluck('me'));
+            $stats['other'] = new Stats($details->pluck('other'));
         } else {
             $details = collect([]);
         }
@@ -53,41 +54,8 @@ class SummonerVersus extends Component
         return view('livewire.summoner-versus',
             [
                 'details' => $this->paginate($details),
+                'stats' => $stats,
             ]
         );
-    }
-
-    public function getStats($details)
-    {
-        $this->stats = [];
-        $this->stats['me'] = $this->getStat($details);
-        $this->stats['other'] = $this->getStat($details, false);
-    }
-
-    public function getStat($details, $isMe = true)
-    {
-        $tmp = [
-            'kill_participation' => 0,
-            'kda' => 0,
-            'game_won' => 0,
-            'win_percent' => 0,
-            'game_lose' => 0,
-            'game_played' => 0,
-        ];
-        $type = $isMe ? 'me' : 'other';
-        if (! $details->isEmpty()) {
-            foreach ($details as $match) {
-                $tmp['kill_participation'] += $match->{$type}->kill_participation;
-                $tmp['kda'] += $match->{$type}->kda;
-                $tmp['game_won'] += $match->{$type}->won;
-                $tmp['game_lose'] += ! $match->{$type}->won;
-                $tmp['game_played'] += 1;
-            }
-            $tmp['kill_participation'] = round($tmp['kill_participation'] / $tmp['game_played'] * 100);
-            $tmp['kda'] = round($tmp['kda'] / $tmp['game_played'], 2);
-            $tmp['win_percent'] = round($tmp['game_won'] / $tmp['game_played'] * 100);
-        }
-
-        return $tmp;
     }
 }

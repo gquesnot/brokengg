@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -62,42 +63,21 @@ class Summoner extends Model
         $count = $this->getMatchesQuery($filters)->count();
 
         return Cache::remember($this->getCacheKey('matche_ids', $filters, $count), 60 * 5, function () use ($filters) {
-            return $this->getMatchesQuery($filters)->select('id', 'match_creation')->pluck('id');
+            return $this->getMatchesQuery($filters)->pluck('id');
         });
     }
 
     public function getMatchesQuery($filters = null, $limit = null): Builder
     {
-        $query = Matche::whereHas('participants', function ($query) {
+        $query = Matche::whereHas('participants', function ($query) use ($filters) {
             $query->where('summoner_id', $this->id);
-        });
+            if (Arr::get($filters, 'champion') != null) {
+                $query->whereChampionId($filters['champion']);
+            }
+        })->filters($filters)->orderByDesc('match_creation');
 
-        $query = $this->applyFilters($query, $filters);
-        $query = $query->orderByDesc('match_creation');
         if ($limit != null) {
             $query = $query->limit($limit);
-        }
-
-        return $query;
-    }
-
-    public function applyFilters($query, $filters)
-    {
-        if (! empty($filters)) {
-            if ($filters['queue'] != null) {
-                $query = $query->where('queue_id', $filters['queue']);
-            }
-            if ($filters['dateStart'] != null) {
-                $query = $query->where('match_creation', '>=', $filters['dateStart']);
-            }
-            if ($filters['dateEnd'] != null) {
-                $query = $query->where('match_creation', '<=', $filters['dateEnd']);
-            }
-            if ($filters['champion'] != null) {
-                $query = $query->whereHas('participants', function ($query) use ($filters) {
-                    $query->where('summoner_id', $this->id)->where('champion_id', $filters['champion']);
-                });
-            }
         }
 
         return $query;
@@ -130,43 +110,52 @@ class Summoner extends Model
             ->get();
     }
 
+    public function getVersusMatchIds($meId, $otherId, $limit)
+    {
+        $query = "SELECT match_id FROM summoner_matches 
+                        WHERE summoner_id = {$meId} AND match_id IN 
+                         (SELECT match_id FROM summoner_matches WHERE summoner_id = {$otherId})";
+        if ($limit != null) {
+            $query .= " LIMIT {$limit}";
+        }
+
+        return collect(DB::select($query))->pluck('match_id');
+    }
+
     public function versus($other, $filters, $limit = null)
     {
         $meId = $this->id;
         $otherId = $other->id;
-        $query = "select match_id from summoner_matches where summoner_id = $meId and match_id in (select match_id from summoner_matches where summoner_id = $otherId)";
-        if ($limit != null) {
-            $query .= " limit $limit";
-        }
-        $results = collect(DB::select($query))->pluck('match_id');
+        $versusMatchIds = $this->getVersusMatchIds($meId, $otherId, $limit);
 
-        $matches = Matche::whereIn('id', $results)
-            ->orderBy('match_creation', 'DESC');
-        $matches = $this->applyFilters($matches, $filters);
-        $matches = $matches
-            ->with(['participants' => function ($query) use ($meId, $otherId) {
+        $matches = Matche::whereIn('id', $versusMatchIds)
+            ->filters($filters)
+            ->select(['id', 'match_creation', 'match_id', 'map_id', 'mode_id'])
+            ->with('participants.champion:id,name,img_url', 'mode:id,name')
+            ->withWhereHas('participants', function ($query) use ($meId, $otherId) {
                 $query->where('summoner_id', $meId)->orWhere('summoner_id', $otherId);
-            }])
-            ->with('participants.champion', 'mode', 'queue', 'map')
-            ->get();
+            })
+            ->orderBy('match_creation', 'DESC');
 
-        return $matches->map(function ($match) use ($meId, $otherId, $filters) {
-            $match['me'] = $match->participants->filter(function ($participant) use ($meId) {
+        $matches = $matches->get();
+
+        return $matches->map(function (Matche $match) use ($meId, $otherId) {
+            $match->setAttribute('me', $match->participants->filter(function ($participant) use ($meId) {
                 return $participant->summoner_id == $meId;
-            })->first();
-            $match['other'] = $match->participants->filter(function ($participant) use ($otherId) {
+            })->first());
+            $match->setAttribute('other', $match->participants->filter(function ($participant) use ($otherId) {
                 return $participant->summoner_id == $otherId;
-            })->first();
-            if ($filters != null && $filters['champion'] != null) {
-                if ($match['me']->champion_id != $filters['champion']) {
-                    return null;
-                }
-            }
+            })->first());
+
             unset($match->participants);
 
             return $match;
-        })->filter(function ($match) {
-            return $match != null;
+        })->filter(function ($match) use ($filters) {
+            if (Arr::get($filters, 'champion') != null) {
+                return $match->me->champion_id == $filters['champion'];
+            }
+
+            return true;
         });
     }
 
