@@ -17,7 +17,7 @@ class Stats
     public int $game_played = 0;
 
     public function __construct(
-        $matches = null,
+        $matches,
     ) {
         $total_kda = 0;
         $total_kill_participation = 0;

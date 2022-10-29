@@ -93,7 +93,7 @@ class Matches extends Component
                     'match_id',
                     'champion_id',
                     'id',
-                ])->get()
+                ])->toBase()->get()
         );
 
         $paginator = new LengthAwarePaginator($matches, $matchIds->count(), $this->perPage, $this->page);
