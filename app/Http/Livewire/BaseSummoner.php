@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Jobs\UpdateMatchJob;
 use App\Models\Summoner as SummonerModel;
 use App\Models\Version;
 use App\Traits\FlashTrait;
@@ -62,7 +63,10 @@ class BaseSummoner extends Component
         $this->summonerId = $summonerId;
         $this->otherSummonerId = $otherSummonerId;
         $this->version = Version::orderBy('created_at')->first()->name;
-        $this->summoner = SummonerModel::where('id', $summonerId)->first();
+        $this->summoner = SummonerModel::find($summonerId);
+        if (!$this->summoner){
+            return redirect()->route('home');
+        }
         $this->tab = Route::currentRouteName();
         $this->setFilters();
     }
@@ -109,7 +113,8 @@ class BaseSummoner extends Component
 
     public function updateSummoner()
     {
-        $this->updateSummonerMatches($this->summoner);
+        UpdateMatchJob::dispatch($this->summoner);
+
         Session::flash('success', 'Summoner updating ...');
     }
 

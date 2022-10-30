@@ -2,6 +2,9 @@
 
 namespace App\Console;
 
+use App\Jobs\AutoUpdateJob;
+use App\Jobs\UpdateMatchesJob;
+use App\Jobs\UpdateMatchJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -15,9 +18,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('matches:auto-update')->withoutOverlapping()->everyMinute();
-        $schedule->command('matches:update')->withoutOverlapping()->everyMinute();
-        $schedule->command('matches:clear')->withoutOverlapping()->everyMinute();
+        $schedule->job(AutoUpdateJob::class)->withoutOverlapping()->everyMinute();
     }
 
     /**
