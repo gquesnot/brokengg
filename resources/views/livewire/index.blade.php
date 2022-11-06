@@ -1,5 +1,6 @@
 <div class="relative">
     <x-nav-bar></x-nav-bar>
+    <x-all-flash></x-all-flash>
     <div class="w-1/2 mx-2 flex flex-col">
         <div class="w-1/2 flex ">
             <h3 class="text-3xl font-bold">Search Summoner</h3>

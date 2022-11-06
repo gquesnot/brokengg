@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $name
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- *
  * @method static \Illuminate\Database\Eloquent\Builder|Version newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Version newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Version query()

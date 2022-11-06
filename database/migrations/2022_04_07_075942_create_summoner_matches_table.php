@@ -28,7 +28,7 @@ return new class extends Migration
             $table->integer('largest_killing_spree');
             $table->foreignIdFor(\App\Models\Champion::class, 'champion_id')->constrained();
             $table->foreignIdFor(\App\Models\Summoner::class, 'summoner_id')->constrained();
-            $table->foreignIdFor(\App\Models\Matche::class, 'match_id')->constrained();
+            $table->foreignIdFor(\App\Models\Matche::class, 'match_id')->constrained()->onDelete('cascade');
             $table->unsignedInteger('double_kills');
             $table->unsignedInteger('triple_kills');
             $table->unsignedInteger('quadra_kills');

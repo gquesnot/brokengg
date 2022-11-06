@@ -7,15 +7,14 @@ use App\Models\Map;
 use App\Models\Mode;
 use App\Models\Queue;
 use App\Models\Summoner as SummonerModel;
+use App\Models\SummonerApi;
 use App\Traits\PaginateTrait;
-use App\Traits\RiotApiTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class LiveGame extends Component
 {
-    use RiotApiTrait;
     use PaginateTrait;
 
     public $me;
@@ -45,16 +44,19 @@ class LiveGame extends Component
 
     public function getLiveGame()
     {
-        $data = $this->getSummonerLiveGameByAccountId($this->me->summoner_id);
+        $riotApi  = new \App\Helpers\RiotApi();
+        # TODO MAKE AGAIN
+        $data = $riotApi->getSummonerLiveGameByAccountId($this->me);
         $this->loaded = $data != null;
         if (! $this->loaded) {
             return;
         }
         $this->participants = collect($data->participants);
-        $encounters = $this->me->encounters();
+        $encountersMatchIds = $this->me->getCachedMatchesQuery([]);
+        $encounters = $this->me->getCachedEncounters($encountersMatchIds, []);
         $this->participants = $this->participants->map(function ($participant) use ($encounters) {
             $participant->total = 0;
-            $summoner = SummonerModel::where('summoner_id', $participant->summonerId)->first();
+            $summoner = SummonerApi::where('api_summoner_id', $participant->summonerId)->first()?->summoner;
             if ($summoner) {
                 if ($encounters->has($summoner->id)) {
                     $participant->total = $encounters->get($summoner->id);
@@ -84,9 +86,16 @@ class LiveGame extends Component
 
     public function searchSummoners()
     {
-        $encounters = $this->me->encounters(null, true);
 
-        $this->lobbyParticipants = collect(explode("\n", $this->search))->map(function ($name) use ($encounters) {
+        if ($this->search == null || $this->search == '') {
+            $this->lobbyParticipants = null;
+
+            return;
+        }
+        $encountersMatchIds = $this->me->getCachedMatchesQuery([]);
+        $encounters = $this->me->getCachedEncounters($encountersMatchIds, []);
+        $api = new \App\Helpers\RiotApi();
+        $this->lobbyParticipants = collect(explode("\n", $this->search))->map(function ($name) use ($encounters, $api) {
             if (str_contains($name, 'joined the lobby')) {
                 $name = str_replace(' joined the lobby', '', $name);
             }
@@ -94,16 +103,8 @@ class LiveGame extends Component
             $summoner = SummonerModel::where('name', $name)->first();
 
             if (! $summoner) {
-                $summonerData = $this->getSummonerByName($name);
-                $summoner = SummonerModel::create([
-                    'summoner_id' => $summonerData->id,
-                    'account_id' => $summonerData->accountId,
-                    'puuid' => $summonerData->puuid,
-                    'name' => $summonerData->name,
-                    'profile_icon_id' => $summonerData->profileIconId,
-                    'revision_date' => $summonerData->revisionDate,
-                    'summoner_level' => $summonerData->summonerLevel,
-                ]);
+
+                $summoner = $api->getAndUpdateSummonerByName($name,);
             }
 
             $summoner->total = 0;

@@ -27,7 +27,6 @@ use Illuminate\Support\Arr;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $participants
  * @property-read int|null $participants_count
  * @property-read \App\Models\Queue|null $queue
- *
  * @method static Builder|Matche filters($filters)
  * @method static Builder|Matche newModelQuery()
  * @method static Builder|Matche newQuery()
@@ -61,24 +60,30 @@ class Matche extends Model
 
     public function getSinceMatchEndAttribute()
     {
-        $duration = Carbon::parse($this->getRawOriginal('match_duration'));
-
+        # convert 00:00:00 to h m s
+        $match_duration = explode(':', $this->getRawOriginal('match_duration'));
+        $match_duration_m =  intval($match_duration[0]) * 60 + intval($match_duration[1]);
+        $match_duration_s = intval($match_duration[2]);
         return Carbon::parse($this->match_creation)
-            ->addHours($duration->hour)
-            ->addMinutes($duration->minute)
-            ->addSeconds($duration->second)
+            ->addMinutes($match_duration_m)
+            ->addSeconds($match_duration_s)
             ->diffForHumans();
     }
 
     public function getMatchDurationAttribute($value)
     {
-        $duration = Carbon::parse($value);
+        $value = explode(':', $value);
+
+        $match_h = intval($value[0]);
+        $match_m = intval($value[1]);
+        $match_s = intval($value[2]);
+
         $res = '';
-        if ($duration->hour > 0) {
-            $res .= $duration->hour.'h ';
+        if ($match_h > 0) {
+            $res .= $match_h.'h ';
         }
-        $res .= $duration->minute.'m ';
-        $res .= $duration->second.'s';
+        $res .= $match_m.'m ';
+        $res .= $match_s.'s';
 
         return $res;
     }

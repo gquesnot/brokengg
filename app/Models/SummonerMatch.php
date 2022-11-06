@@ -38,7 +38,6 @@ use Illuminate\Support\Facades\DB;
  * @property-read int|null $items_count
  * @property-read \App\Models\Matche|null $match
  * @property-read \App\Models\Summoner|null $summoner
- *
  * @method static Builder|SummonerMatch championsCalc($championIds)
  * @method static Builder|SummonerMatch filters($filters)
  * @method static Builder|SummonerMatch newModelQuery()

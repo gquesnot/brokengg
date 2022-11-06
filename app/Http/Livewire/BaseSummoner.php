@@ -2,12 +2,15 @@
 
 namespace App\Http\Livewire;
 
+use App\Helpers\RiotApi;
+use App\Jobs\AutoUpdateJob;
+use App\Jobs\UpdateMatchesJob;
 use App\Jobs\UpdateMatchJob;
 use App\Models\Summoner as SummonerModel;
 use App\Models\Version;
 use App\Traits\FlashTrait;
 use App\Traits\QueryParamsTrait;
-use App\Traits\RiotApiTrait;
+use Bus;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
@@ -16,7 +19,6 @@ use Livewire\WithPagination;
 
 class BaseSummoner extends Component
 {
-    use RiotApiTrait;
     use FlashTrait;
     use WithPagination;
     use QueryParamsTrait;
@@ -62,10 +64,15 @@ class BaseSummoner extends Component
     {
         $this->summonerId = $summonerId;
         $this->otherSummonerId = $otherSummonerId;
+        # TODO: check user has all account_apis
         $this->version = Version::orderBy('created_at')->first()->name;
         $this->summoner = SummonerModel::find($summonerId);
         if (!$this->summoner){
             return redirect()->route('home');
+        }
+        if (!$this->summoner->complete) {
+            $riotApi = new RiotApi();
+            $summoner = $riotApi->getAndUpdateSummonerByName($this->summoner->name);
         }
         $this->tab = Route::currentRouteName();
         $this->setFilters();
@@ -113,7 +120,12 @@ class BaseSummoner extends Component
 
     public function updateSummoner()
     {
-        UpdateMatchJob::dispatch($this->summoner);
+        #UpdateMatchJob::dispatchSync($this->summoner);
+//        UpdateMatchesJob::dispatchSync();
+        Bus::chain([
+            new UpdateMatchJob($this->summoner),
+            new UpdateMatchesJob(),
+        ])->dispatch();
 
         Session::flash('success', 'Summoner updating ...');
     }

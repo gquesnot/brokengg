@@ -13,33 +13,30 @@ use Illuminate\Support\Facades\DB;
  * App\Models\Summoner
  *
  * @property int $id
- * @property string|null $summoner_id
- * @property string|null $account_id
- * @property string|null $puuid
  * @property string|null $name
- * @property string|null $profile_icon_id
- * @property string|null $revision_date
- * @property string|null $summoner_level
+ * @property int|null $profile_icon_id
+ * @property int|null $revision_date
+ * @property int|null $summoner_level
  * @property string|null $last_scanned_match
+ * @property bool $complete
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $auto_update
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
- *
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerApi[] $summonerApis
+ * @property-read int|null $summoner_apis_count
  * @method static Builder|Summoner newModelQuery()
  * @method static Builder|Summoner newQuery()
  * @method static Builder|Summoner query()
- * @method static Builder|Summoner whereAccountId($value)
  * @method static Builder|Summoner whereAutoUpdate($value)
+ * @method static Builder|Summoner whereComplete($value)
  * @method static Builder|Summoner whereCreatedAt($value)
  * @method static Builder|Summoner whereId($value)
  * @method static Builder|Summoner whereLastScannedMatch($value)
  * @method static Builder|Summoner whereName($value)
  * @method static Builder|Summoner whereProfileIconId($value)
- * @method static Builder|Summoner wherePuuid($value)
  * @method static Builder|Summoner whereRevisionDate($value)
- * @method static Builder|Summoner whereSummonerId($value)
  * @method static Builder|Summoner whereSummonerLevel($value)
  * @method static Builder|Summoner whereUpdatedAt($value)
  * @mixin \Eloquent
@@ -49,14 +46,22 @@ class Summoner extends Model
     use HasFactory;
 
     protected $fillable = [
-        'summoner_id',
-        'account_id',
-        'puuid',
         'name',
         'profile_icon_id',
         'revision_date',
         'summoner_level',
+        'complete'
     ];
+
+    protected $casts = [
+        'complete' => 'boolean'
+    ];
+
+    public function summonerApis(){
+        return $this->hasMany(SummonerApi::class);
+    }
+
+
 
     public function getCachedMatchesQuery($filters = [])
     {
@@ -69,7 +74,7 @@ class Summoner extends Model
 
     public function getMatchesQuery($filters = null, $limit = null): Builder
     {
-        $query = Matche::whereHas('participants', function ($query) use ($filters) {
+        $query = Matche::whereUpdated(true)->whereHas('participants', function ($query) use ($filters) {
             $query->where('summoner_id', $this->id);
             if (Arr::get($filters, 'champion') != null) {
                 $query->whereChampionId($filters['champion']);
@@ -130,7 +135,7 @@ class Summoner extends Model
 
         $matches = Matche::whereIn('id', $versusMatchIds)
             ->filters($filters)
-            ->select(['id', 'match_creation', 'match_id', 'map_id', 'mode_id'])
+            ->select(['id', 'match_creation', 'match_duration', 'match_id', 'map_id', 'mode_id'])
             ->with('participants.champion:id,name,img_url', 'mode:id,name')
             ->withWhereHas('participants', function ($query) use ($meId, $otherId) {
                 $query->where('summoner_id', $meId)->orWhere('summoner_id', $otherId);

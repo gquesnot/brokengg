@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,5 +26,6 @@ class AppServiceProvider extends ServiceProvider
     {
         // length key to loong
         \Illuminate\Support\Facades\Schema::defaultStringLength(120);
+        //Carbon::setLocale('fr');
     }
 }

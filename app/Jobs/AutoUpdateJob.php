@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\Summoner as SummonerModel;
-use App\Traits\RiotApiTrait;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,7 +14,7 @@ use Illuminate\Support\Facades\Log;
 
 class AutoUpdateJob implements ShouldQueue, ShouldBeUnique
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, RiotApiTrait;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct()
     {
@@ -24,11 +23,17 @@ class AutoUpdateJob implements ShouldQueue, ShouldBeUnique
     public function handle()
     {
         $results = collect([]);
+        $riotApi = new \App\Helpers\RiotApi();
+        # TODO : fix this
         $summoners = SummonerModel::whereAutoUpdate(True)->select(['puuid','last_scanned_match'])->get();
-        foreach ($summoners as $summoner) {
-            $results = $results->merge($this->updateSummonerMatches($summoner));
-        }
+//        foreach ($summoners as $summoner) {
+//            $results = $results->merge($riotApi->updateSummonerMatches());
+//        }
         Log::info($results->count().' Matches added');
-        app(\Illuminate\Bus\Dispatcher::class)->dispatch(new \App\Jobs\UpdateMatchesJob());
     }
+
+    public function uniqueId(){
+        return 2;
+    }
+
 }

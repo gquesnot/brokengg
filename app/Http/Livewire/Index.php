@@ -2,16 +2,18 @@
 
 namespace App\Http\Livewire;
 
+use App\Helpers\RiotApi;
 use App\Http\Controllers\SyncLolController;
+use App\Jobs\UpdateRiotKeysJob;
+use App\Models\ApiAccount;
 use App\Models\Summoner;
 use App\Traits\FlashTrait;
-use App\Traits\RiotApiTrait;
+
 use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 
 class Index extends Component
 {
-    use RiotApiTrait;
     use FlashTrait;
 
     public string $summonerName = 'random iron';
@@ -35,35 +37,15 @@ class Index extends Component
     {
         $controller = new SyncLolController();
         $controller->index();
+        UpdateRiotKeysJob::dispatch();
         Session::flash('success', 'Synced');
     }
 
     public function searchSummoner()
     {
-        $summonerData = $this->getSummonerByName($this->summonerName);
-        $summoner = Summoner::where('puuid', $summonerData->puuid)->first();
-        if (! $summoner) {
-            $summoner = Summoner::create([
-                'summoner_id' => $summonerData->id,
-                'account_id' => $summonerData->accountId,
-                'puuid' => $summonerData->puuid,
-                'name' => $summonerData->name,
-                'profile_icon_id' => $summonerData->profileIconId,
-                'revision_date' => $summonerData->revisionDate,
-                'summoner_level' => $summonerData->summonerLevel,
-            ]);
-        } else {
-            $summoner->update([
-                'summoner_id' => $summonerData->id,
-                'account_id' => $summonerData->accountId,
-                'puuid' => $summonerData->puuid,
-                'name' => $summonerData->name,
-                'profile_icon_id' => $summonerData->profileIconId,
-                'revision_date' => $summonerData->revisionDate,
-                'summoner_level' => $summonerData->summonerLevel,
-            ]);
-        }
+        $riotApi = new RiotApi();
 
+        $summoner = $riotApi->getAndUpdateSummonerByName($this->summonerName);
         return redirect()->route('summoner', ['summonerId' => $summoner->id]);
     }
 

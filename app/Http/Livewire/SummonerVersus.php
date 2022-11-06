@@ -3,6 +3,7 @@
 namespace App\Http\Livewire;
 
 use App\Helpers\Stats;
+use App\Models\Summoner;
 use App\Traits\PaginateTrait;
 use App\Traits\QueryParamsTrait;
 use Livewire\Component;
@@ -12,7 +13,7 @@ class SummonerVersus extends Component
     use PaginateTrait;
     use QueryParamsTrait;
 
-    public $me;
+    public Summoner $me;
 
     public $other;
 

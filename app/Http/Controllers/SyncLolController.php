@@ -8,15 +8,16 @@ use App\Models\Map;
 use App\Models\Mode;
 use App\Models\Queue;
 use App\Models\Version;
-use App\Traits\RiotApiTrait;
+
 
 class SyncLolController extends Controller
 {
-    use RiotApiTrait;
+    public  $client;
 
     public function index()
     {
-        $this->initClient();
+        $this->client = new \GuzzleHttp\Client();
+
 
         $version = $this->syncVersion();
         $this->syncChampions($version->name);

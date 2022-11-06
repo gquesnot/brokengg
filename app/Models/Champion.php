@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
- *
  * @method static \Illuminate\Database\Eloquent\Builder|Champion newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Champion newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Champion query()

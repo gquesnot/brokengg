@@ -3,17 +3,7 @@
 namespace App\Jobs;
 
 use App\Exceptions\LolApiException;
-use App\Models\Champion;
-use App\Models\ItemSummonerMatch;
-use App\Models\Map;
-use App\Models\Matche;
-use App\Models\Mode;
-use App\Models\Queue;
-use App\Models\Summoner;
-use App\Models\Summoner as SummonerModel;
-use App\Models\SummonerMatch;
-use App\Traits\RiotApiTrait;
-use Carbon\Carbon;
+use App\Helpers\RiotApi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,9 +13,22 @@ use Illuminate\Queue\SerializesModels;
 
 class UpdateMatchesJob implements ShouldQueue, ShouldBeUnique
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, RiotApiTrait;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
 
+    public function timeout()
+    {
+        return 60 * 60;
+    }
+
+    public function uniqueId()
+    {
+        return 1;
+    }
+
+    public function backoff(){
+        return 30;
+    }
 
     public function __construct()
     {
@@ -38,12 +41,12 @@ class UpdateMatchesJob implements ShouldQueue, ShouldBeUnique
      */
     public function handle()
     {
-        $this->updateMatches();
+        $riotApi = new RiotApi();
+        $riotApi->updateMatches();
+        $riotApi->reset();
+        $riotApi->clearMatches();
+        #$riotApi->updateIncompleteSummoners();
     }
-
-
-
-
 
 
 }

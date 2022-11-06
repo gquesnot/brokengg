@@ -2,9 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Helpers\RiotApi;
 use App\Models\Matche;
 use App\Models\Summoner;
-use App\Traits\RiotApiTrait;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,18 +15,24 @@ use Illuminate\Support\Facades\Log;
 
 class UpdateMatchJob implements ShouldQueue, ShouldBeUnique
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, RiotApiTrait;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    private RiotApi $riotApi;
 
     public function __construct(public Summoner $summoner)
     {
+
+    }
+
+    public function uniqueId(){
+        return 3;
     }
 
 
     public function handle()
     {
-        $result = $this->updateSummonerMatches($this->summoner);
+        $this->riotApi = new RiotApi($this->summoner);
+        $result = $this->riotApi->updateSummonerMatches();
         Log::info($result->count().' Matches added');
-        app(\Illuminate\Bus\Dispatcher::class)->dispatch(new \App\Jobs\UpdateMatchesJob());
     }
 }

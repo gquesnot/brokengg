@@ -6,7 +6,6 @@
 	</div>
 	<div class="flex flex-col text-center">
 		<div class="font-medium">{{$detail->mode->name}}</div>
-		<div>{{$detail->since_match_creation}}</div>
 		<div @class(["text-blue-600" => $detail->me->won , "text-red-600"=>!$detail->me->won, "text-center"])>{{$detail->me->won ? "won" : "lose"}}</div>
 		<div>{{$detail->match_duration}}</div>
 	</div>

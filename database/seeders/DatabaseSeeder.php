@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Http\Controllers\SyncLolController;
+use App\Jobs\UpdateRiotKeysJob;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -18,8 +19,12 @@ class DatabaseSeeder extends Seeder
         $this->call([
             TierSeeder::class,
             UserSeeder::class,
+            LolApiAccountSeeder::class,
         ]);
         $slc = new SyncLolController();
+        echo "Syncing...<br>";
         $slc->index();
+        echo "Get api account<br>";
+        UpdateRiotKeysJob::dispatchSync();
     }
 }

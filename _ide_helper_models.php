@@ -12,6 +12,28 @@
 
 namespace App\Models{
 /**
+ * App\Models\ApiAccount
+ *
+ * @property int $id
+ * @property string $username
+ * @property string $password
+ * @property bool $actif
+ * @property string|null $token
+ * @method static \Illuminate\Database\Eloquent\Builder|ApiAccount newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ApiAccount newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ApiAccount query()
+ * @method static \Illuminate\Database\Eloquent\Builder|ApiAccount whereActif($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ApiAccount whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ApiAccount wherePassword($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ApiAccount whereToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ApiAccount whereUsername($value)
+ * @mixin \Eloquent
+ */
+	class IdeHelperApiAccount {}
+}
+
+namespace App\Models{
+/**
  * App\Models\Champion
  *
  * @property int $id
@@ -122,19 +144,20 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $participants
  * @property-read int|null $participants_count
  * @property-read \App\Models\Queue|null $queue
- * @method static \Illuminate\Database\Eloquent\Builder|Matche newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Matche newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Matche query()
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereMapId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereMatchCreation($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereMatchDuration($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereMatchId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereModeId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereQueueId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereUpdated($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Matche whereUpdatedAt($value)
+ * @method static Builder|Matche filters($filters)
+ * @method static Builder|Matche newModelQuery()
+ * @method static Builder|Matche newQuery()
+ * @method static Builder|Matche query()
+ * @method static Builder|Matche whereCreatedAt($value)
+ * @method static Builder|Matche whereId($value)
+ * @method static Builder|Matche whereMapId($value)
+ * @method static Builder|Matche whereMatchCreation($value)
+ * @method static Builder|Matche whereMatchDuration($value)
+ * @method static Builder|Matche whereMatchId($value)
+ * @method static Builder|Matche whereModeId($value)
+ * @method static Builder|Matche whereQueueId($value)
+ * @method static Builder|Matche whereUpdated($value)
+ * @method static Builder|Matche whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 	class IdeHelperMatche {}
@@ -142,7 +165,7 @@ namespace App\Models{
 
 namespace App\Models{
 /**
- * App\Models\Modes
+ * App\Models\Mode
  *
  * @property int $id
  * @property string $name
@@ -159,7 +182,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Mode whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-	class IdeHelperModes {}
+	class IdeHelperMode {}
 }
 
 namespace App\Models{
@@ -202,24 +225,40 @@ namespace App\Models{
  * @property int $auto_update
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner query()
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereAccountId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereAutoUpdate($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereLastScannedMatch($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereProfileIconId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner wherePuuid($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereRevisionDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereSummonerId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereSummonerLevel($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Summoner whereUpdatedAt($value)
+ * @method static Builder|Summoner newModelQuery()
+ * @method static Builder|Summoner newQuery()
+ * @method static Builder|Summoner query()
+ * @method static Builder|Summoner whereAccountId($value)
+ * @method static Builder|Summoner whereAutoUpdate($value)
+ * @method static Builder|Summoner whereCreatedAt($value)
+ * @method static Builder|Summoner whereId($value)
+ * @method static Builder|Summoner whereLastScannedMatch($value)
+ * @method static Builder|Summoner whereName($value)
+ * @method static Builder|Summoner whereProfileIconId($value)
+ * @method static Builder|Summoner wherePuuid($value)
+ * @method static Builder|Summoner whereRevisionDate($value)
+ * @method static Builder|Summoner whereSummonerId($value)
+ * @method static Builder|Summoner whereSummonerLevel($value)
+ * @method static Builder|Summoner whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ApiAccount[] $lolApiAccounts
+ * @property-read int|null $lol_api_accounts_count
  */
 	class IdeHelperSummoner {}
+}
+
+namespace App\Models{
+/**
+ * App\Models\SummonerApi
+ *
+ * @property-read \App\Models\ApiAccount|null $lolApiAccount
+ * @property-read \App\Models\Summoner|null $summoner
+ * @method static \Illuminate\Database\Eloquent\Builder|SummonerApi newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SummonerApi newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SummonerApi query()
+ * @mixin \Eloquent
+ */
+	class IdeHelperSummonerApi {}
 }
 
 namespace App\Models{
@@ -246,7 +285,6 @@ namespace App\Models{
  *
  * @property int $id
  * @property int $won
- * @property int $champion_id
  * @property float $kill_participation
  * @property float $kda
  * @property int $assists
@@ -257,6 +295,7 @@ namespace App\Models{
  * @property array $stats
  * @property int $minions_killed
  * @property int $largest_killing_spree
+ * @property int $champion_id
  * @property int $summoner_id
  * @property int $match_id
  * @property int $double_kills
@@ -264,33 +303,34 @@ namespace App\Models{
  * @property int $quadra_kills
  * @property int $penta_kills
  * @property-read \App\Models\Champion|null $champion
- * @property-read mixed $cs_per_minute
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Item[] $items
  * @property-read int|null $items_count
  * @property-read \App\Models\Matche|null $match
  * @property-read \App\Models\Summoner|null $summoner
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch query()
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereAssists($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereChallenges($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereChampLevel($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereChampionId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereDeaths($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereDoubleKills($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereKda($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereKillParticipation($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereKills($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereLargestKillingSpree($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereMatchId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereMinionsKilled($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch wherePentaKills($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereQuadraKills($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereStats($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereSummonerId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereTripleKills($value)
- * @method static \Illuminate\Database\Eloquent\Builder|SummonerMatch whereWon($value)
+ * @method static Builder|SummonerMatch championsCalc($championIds)
+ * @method static Builder|SummonerMatch filters($filters)
+ * @method static Builder|SummonerMatch newModelQuery()
+ * @method static Builder|SummonerMatch newQuery()
+ * @method static Builder|SummonerMatch query()
+ * @method static Builder|SummonerMatch whereAssists($value)
+ * @method static Builder|SummonerMatch whereChallenges($value)
+ * @method static Builder|SummonerMatch whereChampLevel($value)
+ * @method static Builder|SummonerMatch whereChampionId($value)
+ * @method static Builder|SummonerMatch whereDeaths($value)
+ * @method static Builder|SummonerMatch whereDoubleKills($value)
+ * @method static Builder|SummonerMatch whereId($value)
+ * @method static Builder|SummonerMatch whereKda($value)
+ * @method static Builder|SummonerMatch whereKillParticipation($value)
+ * @method static Builder|SummonerMatch whereKills($value)
+ * @method static Builder|SummonerMatch whereLargestKillingSpree($value)
+ * @method static Builder|SummonerMatch whereMatchId($value)
+ * @method static Builder|SummonerMatch whereMinionsKilled($value)
+ * @method static Builder|SummonerMatch wherePentaKills($value)
+ * @method static Builder|SummonerMatch whereQuadraKills($value)
+ * @method static Builder|SummonerMatch whereStats($value)
+ * @method static Builder|SummonerMatch whereSummonerId($value)
+ * @method static Builder|SummonerMatch whereTripleKills($value)
+ * @method static Builder|SummonerMatch whereWon($value)
  * @mixin \Eloquent
  */
 	class IdeHelperSummonerMatch {}
