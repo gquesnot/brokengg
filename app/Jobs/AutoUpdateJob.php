@@ -24,11 +24,11 @@ class AutoUpdateJob implements ShouldQueue, ShouldBeUnique
     {
         $results = collect([]);
         $riotApi = new \App\Helpers\RiotApi();
-        # TODO : fix this
-        $summoners = SummonerModel::whereAutoUpdate(True)->select(['puuid','last_scanned_match'])->get();
-//        foreach ($summoners as $summoner) {
-//            $results = $results->merge($riotApi->updateSummonerMatches());
-//        }
+        $summoners = SummonerModel::whereAutoUpdate(True)->get();
+        foreach ($summoners as $summoner) {
+            $results = $results->merge($riotApi->updateSummonerMatches($summoner));
+        }
+
         Log::info($results->count().' Matches added');
     }
 

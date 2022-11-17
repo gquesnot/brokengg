@@ -8,6 +8,10 @@ class Stats
 
     public float $kda = 0;
 
+    public float $avg_kills = 0;
+    public float $avg_deaths = 0;
+    public float $avg_assists = 0;
+
     public int $game_won = 0;
 
     public float $win_percent = 0;
@@ -18,21 +22,21 @@ class Stats
 
     public function __construct(
         $matches,
-    ) {
-        $total_kda = 0;
-        $total_kill_participation = 0;
-        $matches->each(function ($match) use (&$total_kda, &$total_kill_participation) {
-            $total_kill_participation += $match->kill_participation;
-            $total_kda += $match->kda;
-            $this->game_won += $match->won;
-            $this->game_lose += ! $match->won;
-            $this->game_played += 1;
-        });
-
-        if ($this->game_played) {
-            $this->kda = round($total_kda / $this->game_played, 2);
-            $this->win_percent = round($this->game_won / $this->game_played * 100);
-            $this->kill_participation = round($total_kill_participation / $this->game_played * 100);
+    )
+    {
+        $this->game_played = $matches->count();
+        if ($this->game_played){
+            $this->game_won = $matches->where('won', true)->count();
+            $this->game_lose = $matches->where('won', false)->count();
+            $this->kill_participation = round($matches->avg('kill_participation') * 100);
+            $this->avg_kills = round($matches->sum('kills') / $this->game_played, 1);
+            $this->avg_deaths = round($matches->sum('deaths') / $this->game_played, 1);
+            $this->avg_assists = round($matches->sum('assists') / $this->game_played, 1);
+            $this->kda = round(($this->avg_kills + $this->avg_assists) / $this->avg_deaths, 1);
+            $this->win_percent = $this->game_played > 0 ? round($this->game_won / $this->game_played * 100, 1) : 0;
         }
+
+
     }
+
 }

@@ -6,8 +6,9 @@ use App\Models\Champion as ChampionModel;
 use App\Models\Map;
 use App\Models\Mode;
 use App\Models\Queue;
+use App\Models\Summoner;
 use App\Models\Summoner as SummonerModel;
-use App\Models\SummonerApi;
+
 use App\Traits\PaginateTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -46,7 +47,7 @@ class LiveGame extends Component
     {
         $riotApi  = new \App\Helpers\RiotApi();
         # TODO MAKE AGAIN
-        $data = $riotApi->getSummonerLiveGameByAccountId($this->me);
+        $data = $riotApi->getSummonerLiveGame($this->me);
         $this->loaded = $data != null;
         if (! $this->loaded) {
             return;
@@ -56,7 +57,7 @@ class LiveGame extends Component
         $encounters = $this->me->getCachedEncounters($encountersMatchIds, []);
         $this->participants = $this->participants->map(function ($participant) use ($encounters) {
             $participant->total = 0;
-            $summoner = SummonerApi::where('api_summoner_id', $participant->summonerId)->first()?->summoner;
+            $summoner = Summoner::where('summoner_id', $participant->summonerId)->first();
             if ($summoner) {
                 if ($encounters->has($summoner->id)) {
                     $participant->total = $encounters->get($summoner->id);
@@ -92,19 +93,20 @@ class LiveGame extends Component
 
             return;
         }
+        $riotApi = new \App\Helpers\RiotApi();
         $encountersMatchIds = $this->me->getCachedMatchesQuery([]);
         $encounters = $this->me->getCachedEncounters($encountersMatchIds, []);
-        $api = new \App\Helpers\RiotApi();
-        $this->lobbyParticipants = collect(explode("\n", $this->search))->map(function ($name) use ($encounters, $api) {
+        $this->lobbyParticipants = collect(explode("\n", $this->search))->map(function ($name) use ($encounters, $riotApi) {
             if (str_contains($name, 'joined the lobby')) {
                 $name = str_replace(' joined the lobby', '', $name);
             }
 
             $summoner = SummonerModel::where('name', $name)->first();
-
-            if (! $summoner) {
-
-                $summoner = $api->getAndUpdateSummonerByName($name,);
+            if (!$summoner){
+                $summoner = $riotApi->getAndUpdateSummonerByName($name);
+            }
+            if (!$summoner){
+                return null;
             }
 
             $summoner->total = 0;
@@ -113,6 +115,8 @@ class LiveGame extends Component
             }
 
             return $summoner;
+        })->filter(function ($summoner) {
+            return $summoner != null;
         });
         $this->lobbyLoaded = true;
     }

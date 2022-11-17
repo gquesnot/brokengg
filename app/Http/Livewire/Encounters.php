@@ -19,6 +19,8 @@ class Encounters extends Component
 
     public $filters = null;
 
+    public string $search = '';
+
     public function mount($me, $version, $filters)
     {
         $this->me = $me;
@@ -30,11 +32,19 @@ class Encounters extends Component
     {
         $encountersMatchIds = $this->me->getCachedMatchesQuery($this->filters);
         $encounters = $this->me->getCachedEncounters($encountersMatchIds, $this->filters);
+        if ($this->search){
+            $summonerIds = Summoner::where('name', 'like', '%'.$this->search.'%')->pluck('id');
+            $encounters = $encounters->filter(function ($total, $key) use($summonerIds){
+                return $summonerIds->contains($key);
+            });
+
+        }
         $encounters = $encounters->sortBy(fn ($summoner) => $summoner, SORT_REGULAR, true);
         $encountersPaginate = $encounters->forPage($this->page, $this->perPage);
         $summoners = Summoner::whereIn('id', $encountersPaginate->keys())->select(['id', 'name'])->get()->each(function (Summoner $summoner) use ($encountersPaginate) {
             $summoner->total = $encountersPaginate->get($summoner->id);
         })->sortBy(fn ($summoner) => $summoner->total, SORT_REGULAR, true);
+
         $paginator = new LengthAwarePaginator($summoners, $encounters->count(), $this->perPage, $this->page);
 
         return view('livewire.encounters', ['encounters' => $paginator]);

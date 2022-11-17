@@ -31,8 +31,8 @@ class UpdateMatchJob implements ShouldQueue, ShouldBeUnique
 
     public function handle()
     {
-        $this->riotApi = new RiotApi($this->summoner);
-        $result = $this->riotApi->updateSummonerMatches();
+        $this->riotApi = new RiotApi();
+        $result = $this->riotApi->updateSummonerMatches($this->summoner);
         Log::info($result->count().' Matches added');
     }
 }

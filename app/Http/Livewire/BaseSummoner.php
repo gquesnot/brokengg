@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Enums\FLashEnum;
 use App\Helpers\RiotApi;
 use App\Jobs\AutoUpdateJob;
 use App\Jobs\UpdateMatchesJob;
@@ -54,7 +55,7 @@ class BaseSummoner extends Component
 
     public int $summonerId = 0;
 
-    protected $listeners = ['filtersUpdated'];
+    protected $listeners = ['filtersUpdated', 'flashMessage'];
 
     protected $queryString = [
         'filters',
@@ -76,6 +77,11 @@ class BaseSummoner extends Component
         }
         $this->tab = Route::currentRouteName();
         $this->setFilters();
+    }
+
+    public function flashMessage( string $type, string $message)
+    {
+        Session::flash($type, $message);
     }
 
     public function setFilters()
@@ -116,6 +122,12 @@ class BaseSummoner extends Component
         } else {
             $this->summonerToOpen[] = $encounterId;
         }
+    }
+
+    public function fullUpdateSummoner(){
+        $this->summoner->last_scanned_match = null;
+        $this->summoner->save();
+        $this->updateSummoner();
     }
 
     public function updateSummoner()

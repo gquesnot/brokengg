@@ -16,11 +16,11 @@ return new class extends Migration
         Schema::create('matches', function (Blueprint $table) {
             $table->id();
             $table->boolean('updated')->default(false);
-            $table->string('match_id');
-            $table->foreignIdFor(\App\Models\Mode::class, 'mode_id')->nullable()->constrained();
-            $table->foreignIdFor(\App\Models\Map::class, 'map_id')->nullable()->constrained();
-            $table->foreignIdFor(\App\Models\Queue::class, 'queue_id')->nullable()->constrained();
-            $table->timestamp('match_creation')->nullable();
+            $table->string('match_id')->index()->unique();
+            $table->foreignIdFor(\App\Models\Mode::class, 'mode_id')->index()->nullable()->constrained();
+            $table->foreignIdFor(\App\Models\Map::class, 'map_id')->index()->nullable()->constrained();
+            $table->foreignIdFor(\App\Models\Queue::class, 'queue_id')->index()->nullable()->constrained();
+            $table->timestamp('match_creation')->index()->nullable();
             $table->time('match_duration')->nullable();
             $table->timestamps();
         });

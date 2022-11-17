@@ -19,16 +19,18 @@ use Illuminate\Support\Facades\DB;
  * @property int|null $summoner_level
  * @property string|null $last_scanned_match
  * @property bool $complete
+ * @property string|null $summoner_id
+ * @property string|null $account_id
+ * @property string|null $puuid
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $auto_update
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerApi[] $summonerApis
- * @property-read int|null $summoner_apis_count
  * @method static Builder|Summoner newModelQuery()
  * @method static Builder|Summoner newQuery()
  * @method static Builder|Summoner query()
+ * @method static Builder|Summoner whereAccountId($value)
  * @method static Builder|Summoner whereAutoUpdate($value)
  * @method static Builder|Summoner whereComplete($value)
  * @method static Builder|Summoner whereCreatedAt($value)
@@ -36,7 +38,9 @@ use Illuminate\Support\Facades\DB;
  * @method static Builder|Summoner whereLastScannedMatch($value)
  * @method static Builder|Summoner whereName($value)
  * @method static Builder|Summoner whereProfileIconId($value)
+ * @method static Builder|Summoner wherePuuid($value)
  * @method static Builder|Summoner whereRevisionDate($value)
+ * @method static Builder|Summoner whereSummonerId($value)
  * @method static Builder|Summoner whereSummonerLevel($value)
  * @method static Builder|Summoner whereUpdatedAt($value)
  * @mixin \Eloquent
@@ -50,17 +54,15 @@ class Summoner extends Model
         'profile_icon_id',
         'revision_date',
         'summoner_level',
-        'complete'
+        'complete',
+        'summoner_id',
+        'account_id',
+        'puuid',
     ];
 
     protected $casts = [
         'complete' => 'boolean'
     ];
-
-    public function summonerApis(){
-        return $this->hasMany(SummonerApi::class);
-    }
-
 
 
     public function getCachedMatchesQuery($filters = [])
@@ -95,7 +97,7 @@ class Summoner extends Model
             $result .= "_{$key}_{$value}";
         }
 
-        return $result."_{$this->id}";
+        return $result . "_{$this->id}";
     }
 
     public function getCachedEncounters($matchIds, $filters = [])

@@ -1,6 +1,6 @@
 <div @class(["bg-blue-200" => $match->won , "bg-red-200"=> !$match->won, "flex my-2 p-2"])>
-	<div class="flex relative mx-2 items-center">
-		<div class="flex flex-col text-center">
+	<div class="flex relative mx-2 items-center w-1/6">
+		<div class="flex flex-col text-center w-2/3">
 			<div class="font-medium">{{$match->match->mode->name}}</div>
 			<div>{{$match->match->since_match_end}}</div>
 			<div @class(["text-blue-600" => $match->won , "text-red-600"=>!$match->won, "text-center"])>{{$match->won ? "won" : "lose"}}</div>
@@ -8,7 +8,7 @@
 
 		</div>
 		{{--                                champion img url --}}
-		<div class="flex flex-col text-center">
+		<div class="flex flex-col text-center w-1/3">
 			<div class="relative flex justify-center items-center ml-4">
 				<img
 					src="http://ddragon.leagueoflegends.com/cdn/{{$version}}/img/champion/{{$match->champion->img_url}}"
@@ -19,7 +19,7 @@
 		</div>
 	</div>
 	<div
-		class=" flex flex-col items-center font-medium flex justify-center items-center mx-2">
+		class=" flex flex-col items-center font-medium flex justify-center items-center mx-2 w-1/12">
 		<div class="font-bold flex items-center">
 			<span class="mx-2">{{$match->kills}}</span>/<span
 				class="mx-2 text-red-600">{{$match->deaths}}</span>/<span
@@ -29,12 +29,12 @@
 			{{$match->kda}} KDA
 		</div>
 	</div>
-	<div class="flex flex-col items-center justify-center text-center mx-2">
+	<div class="flex flex-col items-center justify-center text-center mx-2 w-1/12">
 		<div>Level {{$match->champ_level}}</div>
 		<div>{{$match->minions_killed}} ({{$match->csPerMinute}}) CS</div>
 		<div class="text-red-600">P/Kill {{$match->kill_participation * 100}}%</div>
 	</div>
-	<div class="flex w-36 flex-wrap  items-start mx-2 py-6">
+	<div class="flex w-36 flex-wrap  items-start mx-2 py-6 ">
 		@foreach($match->items as $item)
 			<div class="w-1/3">
 				<div class="relative ml-4">

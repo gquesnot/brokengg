@@ -2,8 +2,6 @@
 
 namespace App\Helpers;
 
-use App\Exceptions\LolApiException;
-use App\Models\ApiAccount;
 use App\Models\Champion;
 use App\Models\ItemSummonerMatch;
 use App\Models\Map;
@@ -11,7 +9,6 @@ use App\Models\Matche;
 use App\Models\Mode;
 use App\Models\Queue;
 use App\Models\Summoner;
-use App\Models\SummonerApi;
 use App\Models\SummonerMatch;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
@@ -24,202 +21,160 @@ use Illuminate\Support\Str;
 
 class  RiotApi
 {
-    protected $client;
+    protected Client $client;
 
     public ?Collection $modes = null;
     public ?Collection $maps = null;
     public ?Collection $queues = null;
-    public Collection $apiAccounts;
-    public ?int $current_account_id = 0;
-    public ?Summoner $summoner;
-    public Carbon $start;
-
-    readonly public int $request_limit;
-    readonly public int $request_limit_seconds;
 
 
-    public function __construct(Summoner $summoner = null)
+    public string $api_key;
+
+
+    public function __construct()
     {
-        $this->request_limit = 100;
-        $this->request_limit_seconds = 120;
-        $this->summoner = $summoner;
-        $this->apiAccounts = Cache::remember('apiAccounts', 120, function () {
-            return ApiAccount::whereActif(true)->get();
-        });
+        $this->api_key = config('lol.api_key');
         $this->client = new Client();
         $this->modes = Mode::select(['id', 'name'])->get();
         $this->maps = Map::pluck('id');
         $this->queues = Queue::pluck('id');
-        $this->reset();
     }
 
 
-    # save cache when RiotApi is destructed
-    public function __destruct()
-    {
-        Cache::put('apiAccounts', $this->apiAccounts, 120);
-    }
 
-    public function getSummonerNameByPuuid(string $puuid): ?string
-    {
-        $summoner = SummonerApi::wherePuuid($puuid)->whereAccountId($this->getAccount()->id)->with('summoner')->first()?->summoner;
-        if ($summoner == null) {
-            return $this->getSummonerByPuuid($puuid)?->name;
-        }
-        return $summoner->name;
-    }
+//    public function getSummonerNameByPuuid(string $puuid): ?string
+//    {
+//        $summoner = SummonerApi::wherePuuid($puuid)->whereAccountId($this->getAccount()->id)->with('summoner')->first()?->summoner;
+//        if ($summoner == null) {
+//            return $this->getSummonerByPuuid($puuid)?->name;
+//        }
+//        return $summoner->name;
+//    }
 
 
-    public function createOrGetTmpSummoner($data, ApiAccount $account): Summoner
+    public function createOrGetTmpSummoner($data): Summoner
     {
-        $summoner = SummonerApi::wherePuuid($data->puuid)->whereAccountId($account->id)->with('summoner')->first()?->summoner;
-        if (!$summoner) {
-            $summoner = Summoner::whereName($data->summonerName)->first();
-        }
+        $summoner = Summoner::wherePuuid($data->puuid)->first();
         if (!$summoner) {
             $summoner = Summoner::firstOrCreate([
                 'name' => $data->summonerName,
-                'summoner_level' => $data->summonerLevel,
-                'profile_icon_id' => $data->profileIcon,
+                'summoner_level' => intval($data->summonerLevel),
+                'profile_icon_id' => intval($data->profileIcon),
                 'complete' => false,
-            ]);
-            SummonerApi::firstOrCreate([
-                'summoner_id' => $summoner->id,
-                'api_account_id' => null,
                 'puuid' => $data->puuid,
-                'account_id' => $account->id,
-                'api_summoner_id' => $data->summonerId,
+                'summoner_id' => $data->summonerId,
+
             ]);
         }
         return $summoner;
     }
 
-    public function retryFn($callback, $accountId = null, $count = 0)
+    public function retryFn($callback, $count = 0)
     {
-        if ($count > count($this->apiAccounts) * 2) {
-            dd('No more api accounts');
-        }
         $result = $callback();
-        if ($result == null) {
-            if ($accountId == null) {
-                $this->nextApi();
-            } else {
-                $this->waitApiOk($accountId);
-            }
-            $result = $this->retryFn($callback, $accountId, $count + 1);
+        if ($result == null && $count < 5) {
+            $result = $this->retryFn($callback, $count + 1);
         }
         return $result;
     }
 
 
-    public function getAndUpdateSummonerByName(string $summonerName): Summoner
+    public function getAndUpdateSummonerByName(string $summonerName): ?Summoner
     {
         $summoner = Summoner::where('name', $summonerName)->first();
         if ($summoner == null || !$summoner->complete) {
 
-            foreach ($this->apiAccounts as $account) {
-                $hasAlready = SummonerApi::where('summoner_id', $summoner?->id)->where('account_id', $account->id)->first();
-                if ($hasAlready) {
-                    if ($hasAlready->api_account_id == null){
-
-                    }
-                    continue;
-                }
-                $summonerData = $this->retryFn(fn() => $this->getSummonerByName($summonerName, $account->api_key), $account->id);
-                $summoner = $this->updateSummoner($summoner, $summonerData, $account);
+            $summonerData = $this->retryFn(fn() => $this->getSummonerByName($summonerName));
+            if ($summonerData == null) {
+                return null;
             }
+            $summoner = $this->updateSummoner($summoner, $summonerData);
         }
-        $summoner->complete = true;
-        $summoner->save();
         return $summoner;
     }
 
-    public function updateSummonerMatches()
+    public function updateSummonerMatches(Summoner $summoner): Collection
     {
-        $matchIds = collect($this->getAllMatchIds(null, null))->reverse();
+        $matchIds = $this->getAllMatchIds($summoner, null, null);
+        $summoner->last_scanned_match = $matchIds->first();
+        $summoner->save();
         $matchDbIds = Matche::whereIn('match_id', $matchIds)->pluck('match_id');
         $resultMatchIds = $matchIds->diff($matchDbIds);
         if ($resultMatchIds->isNotEmpty()) {
-            $this->summoner->last_scanned_match = $resultMatchIds->last();
-            $this->summoner->save();
             Matche::insert($resultMatchIds->map(fn($id) => ['match_id' => $id])->toArray());
         }
 
         return $resultMatchIds;
     }
 
-    public function getAllMatchIds($queuId = null, $startDate = null)
+    public function getAllMatchIds(Summoner $summoner, $queuId = null, $startDate = null): Collection
     {
         $res = new Collection();
         $offset = 0;
         $limit = 100;
+        $max_match_count= config('lol.max_match_count');
         if ($startDate == null) {
-            $startDate = Carbon::createFromFormat('d/m/Y', '16/02/2022')->timestamp;
+            $startDate = Carbon::createFromFormat('d/m/Y', config('lol.min_match_date'))->timestamp;
         }
-        $lastScannedMatch = intval(Str::replaceFirst('EUW1_', '', $this->summoner->last_scanned_match));
+        $lastScannedMatch = Str::of($summoner->last_scanned_match)->replaceFirst('EUW1_', '',)->toInteger();
         while (true) {
 
-            $data = $this->retryFn(fn() => $this->getMatchIds($queuId, $startDate, $limit, $offset));
-            if ($lastScannedMatch != null) {
-                $data = collect($data)->filter(function ($item) use ($lastScannedMatch) {
-                    if ($item == null) {
-                        return false;
-                    }
-                    $item = intval(Str::replaceFirst('EUW1_', '', $item));
-                    return $item > $lastScannedMatch;
-                })->toArray();
+            $data = $this->retryFn(fn() => $this->getMatchIds($summoner, $queuId, $startDate, $limit, $offset));
+            if ($data == null) {
+                break;
             }
             $res = $res->merge($data);
-            if ($data == null || count($data) < $limit) {
+            if (count($data) < $limit) {
                 break;
             }
             $offset += $limit;
         }
 
+        if ($max_match_count && $res->count() > $max_match_count) {
+            $res = $res->slice(0, $max_match_count);
+        }
+
+        if ($lastScannedMatch) {
+            $res = $res->filter(fn($id) => Str::of($id)->replaceFirst('EUW1_', '',)->toInteger() > $lastScannedMatch);
+        }
         return $res;
     }
 
 
-    public function updateMatches(): void
+    public function updateMatches(): int
     {
         $matches = Matche::whereUpdated(false)->get();
         $matchDone = 0;
         foreach ($matches as $match) {
-            try {
-                $check = $this->updateMatch($match);
-            } catch (LolApiException $e) {
-                Log::info($matchDone . '/' . $matches->count() . ' Matches updated');
-                Log::error($e->getMessage());
-                #throw $e;
-                return;
-            }
 
-            if ($check === false) {
+            $ok = $this->updateMatch($match);
+
+
+            if (!$ok) {
                 Matche::where('id', $match->id)->delete();
             }
             $matchDone++;
         }
-        Log::info($matchDone . '/' . $matches->count() . ' Matches updated');
-        $this->clearMatches();
+
+        #$this->clearMatches();
+        return $matchDone;
     }
 
 
-    /**
-     * @throws LolApiException
-     */
+
     public function updateMatch(Matche $match): bool
     {
         $data = $this->retryFn(fn() => $this->getMatchDetail($match->match_id));
         $info = $data->info;
-        $mode = $this->modes->where('name', '=', $info->gameMode)->first();
-        $hasMap = $this->maps->contains($info->mapId);
-        $hasQueue = $this->queues->contains($info->queueId);
-        if ($mode == null || !$hasMap || !$hasQueue) {
+        if ($info->gameMode == "" || $info->mapId == 0 || $info->queueId == 0) {
+            # custom game
+            Log::info("Dosent update match {$match->match_id} because it is a custom game");
             return false;
         }
+        $mode = $this->modes->where('name', '=', $info->gameMode)->first();
         SummonerMatch::where('match_id', $match->id)->delete();
         foreach ($info->participants as $participant) {
-            $summoner = $this->createOrGetTmpSummoner($participant, $this->getAccount());
+            $summoner = $this->createOrGetTmpSummoner($participant);
             $championId = Champion::where('id', $participant->championId)->pluck('id')->first();
             if ($championId == null) {
                 break;
@@ -297,38 +252,6 @@ class  RiotApi
     }
 
 
-    public function updateIncompleteSummoners()
-    {
-        $summoners = Summoner::whereComplete(false)->with('summonerApis.apiAccount')->get();
-        foreach ($summoners as $summoner) {
-            $summonerApi = $summoner->summonerApis->first();
-            if ($summonerApi == null) {
-                dd('no summoner api', $summoner);
-            }
-//            $summonerData = $this->retryFn(
-//                fn() => $this->getSummonerByPuuid($summonerApi->puuid, $summonerApi->apiAccount->api_key),
-//                $summonerApi->account_id
-//            );
-//            $summoner->update([
-//                'name' => $summonerData->name,
-//                'revision_date' => intval($summonerData->revisionDate),
-//            ]);
-//            $summonerApi->update([
-//                'api_account_id' => $summonerData->accountId,
-//            ]);
-
-            foreach ($this->apiAccounts as $account) {
-                if ($account['id'] != $summonerApi->apiAccount->id) {
-                    $summonerDataName = $this->retryFn(fn () => $this->getSummonerByName($summoner->name, $account->api_key), $account->id);
-                    $this->updateSummoner($summoner, $summonerDataName, $account);
-                }
-            }
-            $summoner->complete = $summoner->summonerApis()->count() == count($this->apiAccounts);
-            $summoner->save();
-        }
-
-    }
-
     public function clearMatches()
     {
         $ids = collect(DB::select('select t.id
@@ -349,117 +272,28 @@ class  RiotApi
         Log::info('clear matches: ' . $ids->count());
     }
 
-    public function nextApi()
+
+    public function waitApiOk($retry_after): bool
     {
-        $this->waitApiOk(accountId: null, save_current_account_id: true);
-        return true;
-    }
-
-    public function hasApiOk($accountId = null): int
-    {
-        $this->updateLimitReached();
-        if ($accountId != null) {
-            $account = $this->getAccount($accountId);
-            return !$account->limit_reached ? $account->id : -1;
-        }
-
-        foreach ($this->apiAccounts as $key => $account) {
-            if (!$account->limit_reached) {
-                return $account->id;
-            }
-
-        }
-        return -1;
-    }
-
-    public function waitApiOk($accountId = null, $save_current_account_id = true)
-    {
-        $account = null;
-        $account_id = $this->hasApiOk($accountId);
-        if ($account_id == -1){
-            if ($accountId != null){
-                $account = $this->getAccount($accountId);
-            }
-            else{
-                foreach ($this->apiAccounts as $key => $apiAccount) {
-                    if ($account == null){
-                        $account = $apiAccount;
-                    }
-                    else{
-                        if ($apiAccount->restart_at->lt($account->restart_at)){
-                            $account = $apiAccount;
-                        }
-                    }
-                }
-            }
-        }
-        else{
-            $account = $this->getAccount($account_id);
-        }
-        if ($save_current_account_id){
-            $this->current_account_id = $account->id;
-        }
-        if ($account_id == -1){
-            $now = Carbon::now();
-            $diffHuman= $account->restart_at->diffForHumans($now);
-            //echo "waiting for api rate limit of {$account->username} : {$diffHuman}".PHP_EOL ;
-            sleep($now->diffInSeconds($account->restart_at));
-            //echo 'done waiting'.PHP_EOL;
-        }
-        return true;
-    }
-
-    public function getApiKey()
-    {
-        return $this->getAccount()->api_key;
-    }
-
-
-    public function getAccount($accountId = null): ?ApiAccount
-    {
-        if ($accountId == null) {
-            $accountId = $this->current_account_id;
-        }
-        return $this->apiAccounts->filter(fn($item) => $item->id == $accountId)->first();
-    }
-
-
-    public function setRequestError($retry_after , $apiKey)
-    {
-        $account = $this->apiAccounts->filter(fn($item) => $item->api_key == $apiKey)->first();
-        //echo 'limit reached on '. $account->username  . PHP_EOL;
-
-        if (is_array($retry_after)){
+        if (is_array($retry_after)) {
             $retry_after = $retry_after[0];
         }
-        if (is_string($retry_after)){
+        if (is_string($retry_after)) {
             $retry_after = intval($retry_after);
         }
-        $retry_after += 5;
-        $account->restart_at = Carbon::now()->addSeconds($retry_after);
-        $account->limit_reached = true;
-        $this->updateLimitReached();
+        sleep($retry_after+ 5);
+
+        return true;
     }
 
 
-    public function updateLimitReached()
-    {
-        $now = Carbon::now();
-        $this->apiAccounts->each(function (ApiAccount $account) use ($now) {
-            if ($account->limit_reached){
-                if ($account->restart_at->lte($now)){
-                    $account->limit_reached = false;
-                    $account->restart_at = null;
-                }
-            }
-        });
-    }
 
-    public function doGetWithRetry($url, $params = [], $apiKey = null)
+
+    public function doGetWithRetry($url, $params = [])
     {
         try {
             $all_params = [
-                "headers" => $this->getHeaders($apiKey),
+                "headers" => $this->getHeaders(),
                 "query" => $params,
             ];
             $response = $this->client->request('GET', $url, $all_params);
@@ -467,24 +301,25 @@ class  RiotApi
             if ($json != null) {
                 return $json;
             } else {
-                echo 'error '. PHP_EOL;
-                dd('error', );
+                echo 'error ' . PHP_EOL;
+                dd('error',);
             }
         } catch (GuzzleException $e) {
-            if (str_contains($e->getMessage() ,"\"message\":\"Data not found\"") ){
+            if (str_contains($e->getMessage(), "\"message\":\"Data not found\"")) {
+
                 return null;
             }
-            dd($e->getMessage());
-            $retry_after = $e->getResponse()->getHeaders()['Retry-After'];
-            $this->setRequestError($retry_after, $apiKey ?? $this->getApiKey());
+            if (array_key_exists('Retry-After', $e->getResponse()->getHeaders())) {
+                $retry_after = $e->getResponse()->getHeaders()['Retry-After'];
+                $this->waitApiOk($retry_after);
+            }
         }
         return null;
     }
 
-    public function getMatchIds($queueId = null, $startDate = 1641592824, $limit = 100, $offset = 0)
+    public function getMatchIds(Summoner $summoner, $queueId = null, $startDate = 1641592824, $limit = 100, $offset = 0)
     {
-        $puuid = $this->summoner->summonerApis->filter(fn($item) => $item->account_id = $this->current_account_id)->first()->puuid;
-        $url = "https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{$puuid}/ids";
+        $url = "https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{$summoner->puuid}/ids";
         $params = [
             'startTime' => $startDate,
             'count' => $limit,
@@ -497,10 +332,10 @@ class  RiotApi
         return $this->doGetWithRetry($url, $params);
     }
 
-    public function getSummonerByName($summonerName, $apiKey)
+    public function getSummonerByName(string $summonerName)
     {
         $summonerName = urlencode($summonerName);
-        return $this->doGetWithRetry("https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerName}", [], $apiKey);
+        return $this->doGetWithRetry("https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerName}");
     }
 
     public function getMatchDetail($matchId)
@@ -509,30 +344,29 @@ class  RiotApi
     }
 
 
-    public function getSummonerByPuuid($puuid, $apiKey = null)
+    public function getSummonerByPuuid(string $puuid)
     {
-        return $this->doGetWithRetry("https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/$puuid", [], $apiKey);
+        return $this->doGetWithRetry("https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/$puuid", []);
     }
 
-    public function getSummonerLiveGameByAccountId(Summoner $summoner)
+    public function getSummonerLiveGame(Summoner $summoner)
     {
-        $summonerApi = $summoner->summonerApis->filter(fn($item) => $item->account_id == $this->current_account_id)->first();
-        return $this->doGetWithRetry("https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/$summonerApi->api_summoner_id");
+        return $this->doGetWithRetry("https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/$summoner->summoner_id");
     }
 
-    public function getSummonerLeague($summonerId)
+    public function getSummonerLeague(Summoner $summoner)
     {
-        return $this->doGetWithRetry("https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/$summonerId");
+        return $this->doGetWithRetry("https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/$summoner->summoner_id");
     }
 
-    public function getHeaders($apiKey = null)
+    public function getHeaders()
     {
         return [
             'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0',
             'Accept-Language' => 'en-US,en;q=0.5',
             'Accept-Charset' => 'application/x-www-form-urlencoded; charset=UTF-8',
             'Origin' => 'https://developer.riotgames.com',
-            'X-Riot-Token' => $apiKey ?? $this->getApiKey(),
+            'X-Riot-Token' => $this->api_key,
         ];
     }
 
@@ -540,45 +374,34 @@ class  RiotApi
     /**
      * @param mixed $summoner
      * @param mixed $summonerData
-     * @param mixed $account
-     * @return Summoner|\Illuminate\Database\Eloquent\HigherOrderBuilderProxy|\Illuminate\Database\Eloquent\Model|mixed|null
+     * @return Summoner
      */
-    private function updateSummoner(?Summoner $summoner, mixed $summonerData, ApiAccount $account): mixed
+    private function updateSummoner(?Summoner $summoner, mixed $summonerData): mixed
     {
 
-        if (!$summoner) {
-            $summoner = SummonerApi::wherePuuid($summonerData->puuid)->whereApiAccountId($account->id)->with('summoner')->first()?->summoner;
-            if ($summoner) {
-                $summoner->name = $summonerData->name;
-                $summoner->profile_icon_id = intval($summonerData->profileIconId);
-                $summoner->revision_date = intval($summonerData->revisionDate);
-                $summoner->summoner_level = intval($summonerData->summonerLevel);
-                $summoner->save();
-            }
-        }
-        if (!$summoner) {
+        if ($summoner) {
+            $summoner->name = $summonerData->name;
+            $summoner->profile_icon_id = intval($summonerData->profileIconId);
+            $summoner->revision_date = intval($summonerData->revisionDate);
+            $summoner->summoner_level = intval($summonerData->summonerLevel);
+            $summoner->summoner_id = $summonerData->id;
+            $summoner->account_id = $summonerData->accountId;
+            $summoner->puuid = $summonerData->puuid;
+            $summoner->complete = true;
+            $summoner->save();
+        } else {
             $summoner = Summoner::firstOrCreate([
                 'name' => $summonerData->name,
                 'profile_icon_id' => intval($summonerData->profileIconId),
                 'revision_date' => intval($summonerData->revisionDate),
                 'summoner_level' => intval($summonerData->summonerLevel),
+                'summoner_id' => $summonerData->id,
+                'account_id' => $summonerData->accountId,
+                'puuid' => $summonerData->puuid,
+                'complete' => true,
             ]);
         }
-
-        SummonerApi::firstOrCreate([
-            'summoner_id' => $summoner->id,
-            'api_account_id' => $summonerData->accountId,
-            'puuid' => $summonerData->puuid,
-            'account_id' => $account->id,
-            'api_summoner_id' => $summonerData->id,
-        ]);
         return $summoner;
     }
 
-    public function reset()
-    {
-        $this->start = Carbon::now();
-        $this->current_account_id = $this->apiAccounts->first()->id;
-
-    }
 }

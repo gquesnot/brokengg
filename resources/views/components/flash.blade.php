@@ -9,7 +9,7 @@
 					<span class=" sm:inline">{{ Session::get($type->value) }}</span>
 				</div>
 
-				<div class="flex justify-end w-full">
+				<div class="flex justify-end w-1/4">
                 <span class=" px-4 py-3">
                 <svg class="fill-current h-6 w-6 text-{{$type->getColor()}}-500" xmlns="http://www.w3.org/2000/svg"
 

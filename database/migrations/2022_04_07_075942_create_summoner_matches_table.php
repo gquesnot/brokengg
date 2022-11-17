@@ -26,13 +26,14 @@ return new class extends Migration
             $table->json('stats');
             $table->integer('minions_killed');
             $table->integer('largest_killing_spree');
-            $table->foreignIdFor(\App\Models\Champion::class, 'champion_id')->constrained();
-            $table->foreignIdFor(\App\Models\Summoner::class, 'summoner_id')->constrained();
-            $table->foreignIdFor(\App\Models\Matche::class, 'match_id')->constrained()->onDelete('cascade');
+            $table->foreignIdFor(\App\Models\Champion::class, 'champion_id')->index()->constrained();
+            $table->foreignIdFor(\App\Models\Summoner::class, 'summoner_id')->index()->constrained();
+            $table->foreignIdFor(\App\Models\Matche::class, 'match_id')->index()->constrained()->onDelete('cascade');
             $table->unsignedInteger('double_kills');
             $table->unsignedInteger('triple_kills');
             $table->unsignedInteger('quadra_kills');
             $table->unsignedInteger('penta_kills');
+
         });
     }
 

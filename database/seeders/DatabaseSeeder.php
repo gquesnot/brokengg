@@ -19,12 +19,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             TierSeeder::class,
             UserSeeder::class,
-            LolApiAccountSeeder::class,
         ]);
         $slc = new SyncLolController();
         echo "Syncing...<br>";
         $slc->index();
-        echo "Get api account<br>";
-        UpdateRiotKeysJob::dispatchSync();
     }
 }

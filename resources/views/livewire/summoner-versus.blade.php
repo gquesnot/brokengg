@@ -1,7 +1,13 @@
-<div>
+<div x-data="{versus_text : @entangle('versus_text')}">
     @if ($other != null)
         <div class="p-2 bg-gray-50 rounded shadow">
         <x-versus-stats :stats="$stats" :me="$me" :other="$other"/>
+            <div class="flex w-full">
+                <button class="w-full p-2 bg-indigo-600 text-white rounded shadow mr-4" @click="$clipboard(versus_text)">Copy Versus as text</button>
+                <button class="ml-4 w-full p-2 bg-indigo-600 text-white rounded shadow" wire:click="sendChampSelectMessage" >Send champ select message</button>
+                <button class="ml-4 w-full p-2 bg-indigo-600 text-white rounded shadow" wire:click="sendOtherMessage" >Send other message</button>
+
+            </div>
             <div class="border-b"></div>
 
         <div class="">
