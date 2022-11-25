@@ -8,6 +8,7 @@ use App\Models\Map;
 use App\Models\Mode;
 use App\Models\Queue;
 use App\Models\Version;
+use Illuminate\Support\Facades\Http;
 
 
 class SyncLolController extends Controller
@@ -16,7 +17,6 @@ class SyncLolController extends Controller
 
     public function index()
     {
-        $this->client = new \GuzzleHttp\Client();
 
 
         $version = $this->syncVersion();
@@ -31,7 +31,7 @@ class SyncLolController extends Controller
 
     private function syncVersion()
     {
-        $versions = json_decode($this->client->request('GET', 'https://ddragon.leagueoflegends.com/api/versions.json')->getBody()->getContents());
+        $versions = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/api/versions.json')->json();
         $lastVersion = $versions[0];
         $version = Version::firstOrCreate([
             'name' => $lastVersion,
@@ -42,14 +42,14 @@ class SyncLolController extends Controller
 
     private function syncChampions($version)
     {
-        $champions = json_decode($this->client->request('GET', 'https://ddragon.leagueoflegends.com/cdn/'.$version.'/data/en_US/champion.json')->getBody()->getContents());
-        foreach ($champions->data as $championName => $champion) {
+        $champions = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/cdn/'.$version.'/data/en_US/champion.json')->json();
+        foreach ($champions['data'] as $championName => $champion) {
             Champion::firstOrCreate([
                 'name' => $championName,
-                'champion_id' => $champion->id,
-                'id' => intval($champion->key),
-                'title' => $champion->title,
-                'img_url' => $champion->image->full,
+                'champion_id' => $champion['id'],
+                'id' => intval($champion['key']),
+                'title' => $champion['title'],
+                'img_url' => $champion['image']['full'],
             ]);
         }
     }
@@ -67,20 +67,22 @@ class SyncLolController extends Controller
 
     private function syncItems($version)
     {
-        $items = json_decode($this->client->request('GET', 'https://ddragon.leagueoflegends.com/cdn/'.$version.'/data/en_US/item.json')->getBody()->getContents());
-        foreach ($items->data as $itemId => $item) {
+
+        $items = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/cdn/'.$version.'/data/en_US/item.json')->json();
+        foreach ($items['data'] as $itemId => $item) {
             Item::firstOrCreate([
-                'name' => $item->name,
+                'name' => $item['name'],
                 'id' => $itemId,
-                'description' => $item->description,
-                'img_url' => $item->image->full,
+                'description' => $item['description'],
+                'img_url' => $item['image']['full'],
             ]);
         }
     }
 
     private function syncModes()
     {
-        $modes = json_decode($this->client->request('GET', 'https://static.developer.riotgames.com/docs/lol/gameModes.json')->getBody()->getContents());
+
+        $modes = Http::withoutVerifying()->get('https://static.developer.riotgames.com/docs/lol/gameModes.json')->json();
         foreach ($modes as $mode) {
             $this->getFirstOrCreate($mode);
         }
@@ -93,31 +95,31 @@ class SyncLolController extends Controller
     private function getFirstOrCreate(mixed $mode): void
     {
         Mode::firstOrCreate([
-            'name' => $mode->gameMode,
-            'description' => str_replace('games', '', $mode->description),
+            'name' => $mode['gameMode'],
+            'description' => str_replace('games', '', $mode['description']),
         ]);
     }
 
     private function syncMaps()
     {
-        $maps = json_decode($this->client->request('GET', 'https://static.developer.riotgames.com/docs/lol/maps.json')->getBody()->getContents());
+        $maps = Http::withoutVerifying()->get('https://static.developer.riotgames.com/docs/lol/maps.json')->json();
         foreach ($maps as $map) {
             Map::firstOrCreate([
-                'id' => $map->mapId,
-                'name' => $map->mapName,
-                'description' => $map->notes,
+                'id' => $map['mapId'],
+                'name' => $map['mapName'],
+                'description' => $map['notes'],
             ]);
         }
     }
 
     private function syncQueues()
     {
-        $queues = json_decode($this->client->request('GET', 'https://static.developer.riotgames.com/docs/lol/queues.json')->getBody()->getContents());
+        $queues = Http::withoutVerifying()->get('https://static.developer.riotgames.com/docs/lol/queues.json')->json();
         foreach ($queues as $queue) {
             Queue::firstOrCreate([
-                'id' => $queue->queueId,
-                'map' => $queue->map,
-                'description' => $queue->description ?? '',
+                'id' => $queue['queueId'],
+                'map' => $queue['map'],
+                'description' => $queue['description'] ?? '',
             ]);
         }
     }
