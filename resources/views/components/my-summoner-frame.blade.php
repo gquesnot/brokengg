@@ -62,7 +62,7 @@
 
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500"
-                                x-text="'not implemented'">
+                                x-text="lol.participant.stats.on_hit_ad">
 
                             </td>
                         </tr>
@@ -72,7 +72,7 @@
 
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500"
-                                x-text="'not implemented'">
+                                x-text="lol.participant.stats.on_hit_ap">
 
                             </td>
                         </tr>
@@ -190,7 +190,7 @@
 
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500"
-                                x-text="'not implemented'">
+                                x-text="lol.participant.stats.dps_true">
 
                             </td>
                         </tr>
@@ -200,7 +200,7 @@
 
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500"
-                                x-text="'not implemented'">
+                                x-text="lol.participant.stats.dps_total">
 
                             </td>
                         </tr>

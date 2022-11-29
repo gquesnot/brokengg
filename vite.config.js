@@ -5,12 +5,12 @@ import { tscPlugin } from "vite-plugin-tsc-watch";
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.ts'],
+            input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: [
                 ...refreshPaths,
                 'app/Http/Livewire/**',
                 'app/Http/**/**.php',
-                "resources/js/**/*.ts",
+                "resources/js/**/*.js",
             ],
         }),
         tscPlugin()

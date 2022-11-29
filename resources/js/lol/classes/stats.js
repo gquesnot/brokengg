@@ -30,12 +30,18 @@ export default class Stats {
         this.as = 0;
         this.dps_ad = 0;
         this.dps_ap = 0;
+        this.dps_true = 0;
         this.dps_ad_damage_taken = 0;
         this.dps_ap_damage_taken = 0;
+        this.dps_true_damage_taken = 0;
+        this.dps_total_damage_taken = 0;
+        this.dps_total = 0;
         this.real_armor = 0;
         this.real_mr = 0;
         this.armor_reduction = 0;
         this.mr_reduction = 0;
+        this.on_hit_ad = 0;
+        this.on_hit_ap = 0;
     }
     reset() {
         this.ad = 0;
@@ -62,15 +68,23 @@ export default class Stats {
         this.tenacity_percent = 0;
         this.heal_power_percent = 0;
         this.adaptative = 0;
+        this.on_hit_ad = 0;
+        this.on_hit_ap = 0;
         this.as = 0;
         this.dps_ad = 0;
         this.dps_ap = 0;
         this.dps_ad_damage_taken = 0;
         this.dps_ap_damage_taken = 0;
         this.armor_reduction = 0;
+        this.dps_true = 0;
+        this.dps_total = 0;
+        this.dps_true_damage_taken = 0;
+        this.dps_total_damage_taken = 0;
         this.mr_reduction = 0;
         this.real_armor = 0;
         this.real_mr = 0;
+        this.cdr = 0;
+        this.ah = 0;
     }
     add_item(item, nb_legendary = 0) {
         if (item.stats) {
@@ -135,6 +149,7 @@ export default class Stats {
         this.ad = frame.stats.ad;
         this.ap = frame.stats.ap;
         this.armor = frame.stats.armor;
+        this.mr = frame.stats.mr;
         this.armor_pen_percent = frame.stats.armor_pen_percent + frame.stats.armor_pen_percent_bonus;
         this.armor_pen_flat = frame.stats.armor_pen_flat + frame.stats.magic_pen_percent_bonus;
         this.as = frame.stats.as;
@@ -175,6 +190,12 @@ export default class Stats {
         this.dps_ap_damage_taken = round(this.dps_ap_damage_taken);
         this.real_armor = round(this.real_armor);
         this.real_mr = round(this.real_mr);
+        this.dps_true = round(this.dps_true);
+        this.dps_true_damage_taken = round(this.dps_true_damage_taken);
+        this.dps_total_damage_taken = round(this.dps_total_damage_taken);
+        this.dps_total = round(this.dps_total);
+        this.on_hit_ap = round(this.on_hit_ap);
+        this.on_hit_ad = round(this.on_hit_ad);
     }
     total_magic_pen() {
         return this.magic_pen_flat + ' + ' + this.magic_pen_percent + '% + ' + this.magic_pen_percent_bonus + '%';

@@ -63,7 +63,10 @@
 
                 </div>
                 <div class="mt-12">
-                    <x-shop></x-shop>
+
+                        <x-shop></x-shop>
+
+
                 </div>
             </div>
 

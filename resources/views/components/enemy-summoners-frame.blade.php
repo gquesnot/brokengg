@@ -83,12 +83,12 @@
 
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
-                                    x-text="'not implemented'">
+                                    x-text="enemy_participant.stats.dps_true_damage_taken">
 
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
 
-                                    x-text="'not implemented'">
+                                    x-text="enemy_participant.stats.dps_total_damage_taken">
                                 </td>
 
 

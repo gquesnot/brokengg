@@ -2,28 +2,29 @@
     <div class="flex pb-4">
 
         <div class="flex pr-3">
-
             <template x-for="(item, idx) in lol.items">
-                <div style="max-width: 60.6167px" class="m-2"
-                     @click="lol.remove_item(idx)"
-                     x-tooltip="{
+                <div class="h-16">
+                    <div style="max-width: 60.6167px" class="m-2"
 
+                         @click="lol.remove_item(idx)"
+                         x-tooltip="{
             content : () => lol.get_item_popup(item.id),
             allowHTML : true,
             appendTo: $root
 
          }"
 
-                >
+                    >
 
-                    <img alt=""
-                         class=" rounded border-b-1 cursor-pointer z-20"
-                         style="max-width: 50px; max-height: 50px; object-fit: cover; object-position: center"
-                         :src="'http://ddragon.leagueoflegends.com/cdn/'+lol.version+'/img/item/'+item.id +'.png'"/>
+
+                        <img alt=""
+                             class=" rounded border-b-1 cursor-pointer z-20"
+                             style="max-width: 50px; max-height: 50px; object-fit: cover; object-position: center"
+                             :src="'http://ddragon.leagueoflegends.com/cdn/'+lol.version+'/img/item/'+item.id +'.png'"/>
+                    </div>
                 </div>
+
             </template>
-
-
         </div>
 
         <button
@@ -76,7 +77,7 @@
 
                             <div class="mr-3 items-center self-center w-1/4"> My Item List</div>
                             <div class="flex pr-3 w-1/2 ">
-                                <template x-for="(item, idx) in  lol.items">
+                                <template x-for="(item, idx) in  lol.items" >
                                     <x-shop-item-self/>
                                 </template>
 
@@ -108,7 +109,7 @@
                             </div>
 
                             <div class="overflow-auto w-3/4 flex flex-wrap content-start" style="max-height: 480px">
-                                <template x-for="item in lol.modified_items">
+                                <template x-for="(item, idx) in lol.modified_items" >
                                     <x-shop-item/>
                                 </template>
 

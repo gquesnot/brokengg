@@ -1,10 +1,9 @@
 <div class="h-16">
     <div style="max-width: 60.6167px" class="m-2"
-         @click="lol.add_item(item.id)"
-{{--    // lolclass get item--}}
-         x-tooltip="{
 
-            content : () => lol.get_item_popup(idx),
+         @click="lol.add_item(item.id)"
+         x-tooltip="{
+            content : () => lol.get_item_popup(item.id),
             allowHTML : true,
             appendTo: $root
 

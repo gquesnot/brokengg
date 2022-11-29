@@ -3,9 +3,8 @@ import ItemCategory from "./data/ItemCategory";
 import Item from "./classes/item";
 import Participant from "./classes/Participant";
 import ItemsController from "./classes/items_controller";
-import Stats from "./classes/stats";
-import { plainToClass } from 'class-transformer';
-
+import {plainToClass} from 'class-transformer';
+import {is_brk, is_dominik, is_guinsoo, is_ie, is_nashor, is_rageknife, is_witsend} from "./util/util";
 
 
 export default class Lol {
@@ -34,10 +33,11 @@ export default class Lol {
         this.version = version;
 
         participants.forEach((participant) => {
-            participant= plainToClass(Participant, participant);
+            participant = plainToClass(Participant, participant);
             this.participants.push(participant);
         });
         this.all_items = items;
+        this.items = [];
         this.items_controller = new ItemsController(items);
         this.select_category(0);
         this.participant_id = participant_id;
@@ -69,7 +69,6 @@ export default class Lol {
 
     set_enemy_participants() {
         this.enemy_participants = [];
-        let enemy_participants: Participant[] = [];
         this.participants.forEach((participant) => {
             if (participant.won !== this.participant.won) {
                 this.enemy_participants.push(participant);
@@ -77,7 +76,7 @@ export default class Lol {
         });
     }
 
-    update_all( update_items: boolean = true) {
+    update_all(update_items: boolean = true) {
 
         this.update_participant(update_items);
         this.set_enemy_participants();
@@ -89,38 +88,43 @@ export default class Lol {
             participant.stats.reset();
             participant.set_stats_from_frame(this.frame_id);
             participant.stats.real_armor = (participant.stats.armor * (1 - this.participant.stats.armor_pen_percent / 100)) - this.participant.stats.armor_pen_flat;
-            participant.stats.real_mr = (participant.stats.mr * (1 - this.participant.stats.magic_pen_percent/ 100)) - this.participant.stats.magic_pen_flat;
+            participant.stats.real_mr = (participant.stats.mr * (1 - this.participant.stats.magic_pen_percent / 100)) - this.participant.stats.magic_pen_flat;
             participant.stats.real_mr = participant.stats.real_mr < 0 ? 0 : participant.stats.real_mr;
             participant.stats.real_armor = participant.stats.real_armor < 0 ? 0 : participant.stats.real_armor;
-            participant.stats.armor_reduction =  (100/(participant.stats.real_armor + 100)) * 100;
-            participant.stats.mr_reduction = (100/(participant.stats.real_mr + 100)) * 100;
+            participant.stats.armor_reduction = (100 / (participant.stats.real_armor + 100)) * 100;
+            participant.stats.mr_reduction = (100 / (participant.stats.real_mr + 100)) * 100;
             console.log("enemy", participant.name, participant.stats);
 
-            let base_dps_ad = participant.stats.dps_ad;
+            let base_dps_ad = this.participant.stats.dps_ad;
             //brk
-            if (this.has_brk()){
-                if (participant.champion){
+            if (this.has_brk()) {
+                if (participant.champion) {
                     let damage_supp = participant.champion.stats.attack_range > 250 ? (participant.stats.hp * 0.08) : (participant.stats.hp * 0.12);
-                    damage_supp  = damage_supp < 15 ? 15 : damage_supp;
+                    damage_supp = damage_supp < 15 ? 15 : damage_supp;
                     base_dps_ad += this.has_guinsoo() ? damage_supp * 0.3 : damage_supp;
                 }
             }
             // has dominik
-            if (this.has_dominik()){
+            if (this.has_dominik()) {
                 let hp_diff = participant.stats.hp - this.participant.stats.hp;
                 hp_diff = hp_diff < 0 ? 0 : hp_diff > 2000 ? 2000 : hp_diff;
-                let dps_percent = 1 + (hp_diff <= 0 ? 0 : (hp_diff * 0.0075 / 100) / 100);
+                let dps_percent = 1 + (hp_diff * 0.0075 / 100) / 100;
                 base_dps_ad *= dps_percent;
             }
-            participant.stats.dps_ad_damage_taken = participant.stats.dps_ad * participant.stats.armor_reduction;
-            participant.stats.dps_ap_damage_taken = participant.stats.dps_ap * participant.stats.mr_reduction;
+            participant.stats.dps_ad_damage_taken = base_dps_ad * participant.stats.armor_reduction / 100;
+            participant.stats.dps_ap_damage_taken = this.participant.stats.dps_ap * participant.stats.mr_reduction / 100;
+            participant.stats.dps_true_damage_taken = this.participant.stats.dps_true;
+            participant.stats.dps_total_damage_taken = participant.stats.dps_ad_damage_taken + participant.stats.dps_ap_damage_taken + participant.stats.dps_true_damage_taken;
+            console.log(
+                'enemy',
+                participant.name,
+                base_dps_ad,
+                participant.stats.dps_ad_damage_taken,
+                participant.stats.dps_ap_damage_taken,
+            )
             participant.stats.round_all();
         });
     }
-
-
-
-
 
 
     update_participant(update_items: boolean = true) {
@@ -130,6 +134,7 @@ export default class Lol {
             this.items_controller.update_items(this.participant, this.frame_id);
             this.items = this.items_controller.items_from_list();
         }
+        console.log('items', this.items);
         this.participant.add_champion_stats(this.frame_id);
         this.calculate_items();
         this.calculate_gold();
@@ -138,47 +143,79 @@ export default class Lol {
     }
 
 
-    calculate_dps(){
+    calculate_dps() {
         let has_ie = this.has_ie();
         let has_guinsoo = this.has_guinsoo();
+        let has_rageknife = this.has_rageknife();
+        let has_nashor = this.has_nashor();
+        let has_witsend = this.has_witsend();
         this.participant.stats.dps_ad = this.participant.stats.ad * this.participant.stats.as;
-        if (this.participant.stats.crit_percent > 0){
-            if (!has_guinsoo){
+        if (this.participant.stats.crit_percent > 0) {
+            if (!has_guinsoo) {
                 let crit_damage = 0.75 + (has_ie ? 0.35 : 0);
-                this.participant.stats.dps_ad *=  1 + (this.participant.stats.crit_percent * crit_damage);
-            }
-            else{
-                this.participant.stats.dps_ad += (this.participant.stats.crit_percent * 2  * this.participant.stats.as)
+
+                this.participant.stats.dps_ad *= 1 + (this.participant.stats.crit_percent/100 * crit_damage);
+            } else if(has_guinsoo) {
+                this.participant.stats.on_hit_ad += this.participant.stats.crit_percent * 2;
                 this.participant.stats.crit_percent = 0;
             }
+            else if (!has_rageknife){
+                this.participant.stats.on_hit_ad  += this.participant.stats.crit_percent * 1.75
+            }
         }
-        // todo : one hit damage
+        if (has_nashor) {
+            this.participant.stats.on_hit_ap += (15 + this.participant.stats.ap * 0.2)  * (has_guinsoo ? 1.3 : 1);
+        }
+        if (has_witsend) {
+            let witsend_damage = 15;
+            let current_frame = this.participant.frames[this.frame_id];
+            if (current_frame.level >= 9 ){
+                // get level between 9 and 15
+                let level = current_frame.level - 8;
+                level = level > 6 ? 6 : level;
+                witsend_damage += level * 10;
 
+                // get level between 15 and 18
+                if (current_frame.level >= 15) {
+                    level = current_frame.level - 14;
+                    witsend_damage += level * 1.25;
+                }
+            }
+            this.participant.stats.on_hit_ap += witsend_damage  * (has_guinsoo ? 1.3 : 1);
+        }
+
+        this.participant.stats.dps_ad += this.participant.stats.on_hit_ad * this.participant.stats.as;
+        this.participant.stats.dps_ap = this.participant.stats.on_hit_ap * this.participant.stats.as;
+        this.participant.stats.dps_true = 0; // todo: add true damage
+        this.participant.stats.dps_total = this.participant.stats.dps_ad + this.participant.stats.dps_ap + this.participant.stats.dps_true;
     }
 
-    calculate_items(){
+    calculate_items() {
 
-        let nb_legendary : number = this.items.filter((item:Item) => {
+        let nb_legendary: number = this.items.filter((item: Item) => {
             return item.type === 'legendary';
         }).length;
         this.items.forEach((item) => {
             this.participant.stats.add_item(item, nb_legendary);
         });
-        this.participant.stats.as = this.participant.stats.base_as * (1 + this.participant.stats.as_percent/100);
+        this.participant.stats.as = this.participant.stats.base_as * (1 + this.participant.stats.as_percent / 100);
         if (this.participant.stats.as > 2.5) {
             this.participant.stats.as = 2.5;
         }
-        if (this.participant.stats.ah !== 0){
+        if (this.participant.stats.ah !== 0) {
             this.participant.stats.cdr = (1 - (100 / (100 + this.participant.stats.ah))) * 100;
         }
-        if (this.participant.stats.adaptative != 0){
+        else{
+            this.participant.stats.cdr = 0;
+        }
+        if (this.participant.stats.adaptative != 0) {
             // todo: handle adpative, compare ad - base ad and ap
         }
 
     }
 
 
-    calculate_gold(){
+    calculate_gold() {
         this.total_gold = this.participant.frames[this.frame_id].total_gold;
         this.current_gold = this.total_gold;
         this.items.forEach((item) => {
@@ -187,7 +224,7 @@ export default class Lol {
 
     }
 
-    item_has_category(category:ItemCategory, item:Item): boolean {
+    item_has_category(category: ItemCategory, item: Item): boolean {
         for (let i = 0; i < item.tags.length; i++) {
             if (category.tags.includes(item.tags[i])) {
                 return true;
@@ -196,45 +233,40 @@ export default class Lol {
         return false;
     }
 
-     select_category(category_id: number) {
+    select_category(category_id: number) {
         this.category = category_id;
         let category = this.items_categories[category_id];
         this.modified_items = [];
-        if (category_id === 0){
-            this.modified_items = Object.values(this.all_items);
-        }
-        else{
-            for (const[_, item] of Object.entries(this.all_items)) {
-                if (this.item_has_category(category, item)) {
-                    this.modified_items.push(item);
-                }
+        for (const [_, item] of Object.entries(this.all_items)) {
+            if ((this.item_has_category(category, item) || category_id === 0) && item) {
+                this.modified_items.push(item);
             }
         }
 
 
     }
 
-    add_item(item_id: number){
+    add_item(item_id: number) {
         let item = this.get_item(item_id);
-        if (!item || this.items.length >= 6){
+        if (!item || this.items.length >= 6) {
             return;
         }
-        if (this.has_ie(false) && this.is_guinsoo(item_id) || this.has_guinsoo() && this.is_ie(item_id)){
+        if (this.has_ie(false) && is_guinsoo(item_id) || this.has_guinsoo() && is_ie(item_id)) {
             return;
         }
-        if (this.items.includes(item)){
-            if (item.type == "legendary" || item.type == "mythic"){
+        if (this.items.includes(item)) {
+            if (item.type == "legendary" || item.type == "mythic") {
                 return;
             }
         }
 
-        if (item.type == "mythic"){
+        if (item.type == "mythic") {
             // check if already have mythic
-            let has_mythic = this.items.some((item:Item) => {
+            let has_mythic = this.items.some((item: Item) => {
                 return item.type === 'mythic';
             });
 
-            if (has_mythic){
+            if (has_mythic) {
                 return;
             }
         }
@@ -243,22 +275,19 @@ export default class Lol {
 
     }
 
-    remove_item(index: number){
+    remove_item(index: number) {
         this.items.splice(index, 1);
         this.update_all(false);
     }
 
-    reset_items(){
+    reset_items() {
         this.items = [];
         this.update_all(false);
     }
 
 
-
-
-
     get_item(item_id: number): Item | null {
-        if (item_id in this.all_items) {
+        if (item_id.toString() in this.all_items) {
             return this.all_items[item_id];
         }
         return null;
@@ -266,7 +295,7 @@ export default class Lol {
 
     get_item_popup(item_id: number): string {
         let item = this.get_item(item_id);
-        if (!item){
+        if (!item) {
             return "";
         }
         let desc = `
@@ -287,14 +316,19 @@ export default class Lol {
                 <div class="font-bold">Stats :</div>
 
         `;
-        Object.entries(item.stats).forEach(([key, value]) => {
-            if (value !== 0) {
-                desc += `<div class="ml-2 w-full flex justify-between relative">
+        if (item.stats == null) {
+            desc += "No stats";
+        } else {
+            Object.entries(item.stats).forEach(([key, value]) => {
+                if (value !== 0) {
+                    desc += `<div class="ml-2 w-full flex justify-between relative">
                               <div class="">${key}</div>
                               <div >${value}</div>
                           </div>`
-            }
-        });
+                }
+            });
+        }
+
 
         if (item.type === 'mythic' && item.mythic_stats !== null) {
             desc += `<h2 class="font-bold mt-2">Mythic :</h2>`;
@@ -311,46 +345,48 @@ export default class Lol {
         return desc
     }
 
-    is_guinsoo(item_id: number){
-        return item_id === 3124;
-    }
-
-    is_ie(item_id: number){
-        return item_id === 3031;
-    }
-
-    is_brk(item_id: number){
-        return item_id === 3153;
-    }
-
-    is_dominik(item_id: number){
-        return item_id === 3036;
-    }
 
     has_guinsoo(): boolean {
         return this.items.some((item) => {
-            return this.is_guinsoo(item.id);
+            return is_guinsoo(item.id);
         });
     }
 
-    has_ie(check_crit_percent:boolean=true): boolean {
+    has_ie(check_crit_percent: boolean = true): boolean {
         return this.items.some((item) => {
-            if (!check_crit_percent){
-                return this.is_ie(item.id);
+            if (!check_crit_percent) {
+                return is_ie(item.id);
             }
-            return this.is_ie(item.id) && this.participant.stats.crit_percent > 0.6;
+            return is_ie(item.id) && this.participant.stats.crit_percent > 0.6;
         })
     }
 
     has_brk(): boolean {
         return this.items.some((item) => {
-            return this.is_brk(item.id);
+            return is_brk(item.id);
         });
     }
 
     has_dominik(): boolean {
         return this.items.some((item) => {
-            return this.is_dominik(item.id);
+            return is_dominik(item.id);
+        });
+    }
+
+    has_nashor(): boolean{
+        return this.items.some((item) => {
+           return is_nashor(item.id)
+        });
+    }
+    has_witsend(): boolean{
+        return this.items.some((item) => {
+           return is_witsend(item.id)
+        });
+    }
+
+    has_rageknife(): boolean{
+        return this.items.some((item) => {
+           return is_rageknife(item.id)
         });
     }
 

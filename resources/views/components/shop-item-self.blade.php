@@ -1,4 +1,4 @@
-<div>
+<div >
     <div style="max-width: 60.6167px" class="m-2"
          @click="lol.remove_item(idx);"
          x-tooltip="{
