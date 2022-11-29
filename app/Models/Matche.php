@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Data\FiltersData;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,7 +28,7 @@ use Illuminate\Support\Arr;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $participants
  * @property-read int|null $participants_count
  * @property-read \App\Models\Queue|null $queue
- * @method static Builder|Matche filters($filters)
+ * @method static Builder|Matche filters(?\App\Data\FiltersData $filters)
  * @method static Builder|Matche newModelQuery()
  * @method static Builder|Matche newQuery()
  * @method static Builder|Matche query()
@@ -88,17 +89,17 @@ class Matche extends Model
         return $res;
     }
 
-    public function scopeFilters(Builder $query, $filters): Builder
+    public function scopeFilters(Builder $query, ?FiltersData $filters): Builder
     {
-        if (! empty($filters)) {
-            if (Arr::get($filters, 'queue') != null) {
-                $query = $query->where('queue_id', $filters['queue']);
+        if ($filters) {
+            if ($filters->date_start) {
+                $query->where('match_creation', '>=', $filters->date_start);
             }
-            if (Arr::get($filters, 'dateStart') != null) {
-                $query = $query->where('match_creation', '>=', $filters['dateStart']);
+            if ($filters->date_end) {
+                $query->where('match_creation', '<=', $filters->date_end);
             }
-            if (Arr::get($filters, 'dateEnd') != null) {
-                $query = $query->where('match_creation', '<=', $filters['dateEnd']);
+            if ($filters->queue){
+                $query->where('queue_id', $filters->queue);
             }
         }
 

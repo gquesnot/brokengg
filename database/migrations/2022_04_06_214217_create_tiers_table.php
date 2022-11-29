@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('name');
             $table->integer('position');
             $table->string('img_url')->nullable();
-            $table->timestamps();
         });
     }
 

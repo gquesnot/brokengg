@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Data\FiltersData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -65,7 +66,7 @@ class Summoner extends Model
     ];
 
 
-    public function getCachedMatchesQuery($filters = [])
+    public function getCachedMatchesQuery(?FiltersData $filters=null)
     {
         $count = $this->getMatchesQuery($filters)->count();
 
@@ -74,12 +75,12 @@ class Summoner extends Model
         });
     }
 
-    public function getMatchesQuery($filters = null, $limit = null): Builder
+    public function getMatchesQuery(FiltersData $filters = null, $limit = null): Builder
     {
         $query = Matche::whereUpdated(true)->whereHas('participants', function ($query) use ($filters) {
             $query->where('summoner_id', $this->id);
-            if (Arr::get($filters, 'champion') != null) {
-                $query->whereChampionId($filters['champion']);
+            if ($filters?->champion) {
+                $query->whereChampionId($filters->champion);
             }
         })->filters($filters)->orderByDesc('match_creation');
 
@@ -90,17 +91,18 @@ class Summoner extends Model
         return $query;
     }
 
-    public function getCacheKey($cacheName, $filters, $count)
+    public function getCacheKey($cacheName, ?FiltersData $filters ,$count, )
     {
         $result = "{$cacheName}_{$count}";
-        foreach ($filters as $key => $value) {
-            $result .= "_{$key}_{$value}";
+        if ($filters){
+            foreach($filters->toArray() as $key => $value){
+                $result .= "_{$key}_{$value}";
+            }
         }
-
         return $result . "_{$this->id}";
     }
 
-    public function getCachedEncounters($matchIds, $filters = [])
+    public function getCachedEncounters($matchIds,?FiltersData $filters=null)
     {
         return Cache::remember($this->getCacheKey('encounters', $filters, $matchIds->count()), 60 * 5, function () use ($matchIds) {
             return $this->encounters($matchIds)->pluck('total', 'summoner_id');
@@ -119,8 +121,8 @@ class Summoner extends Model
 
     public function getVersusMatchIds($meId, $otherId, $limit)
     {
-        $query = "SELECT match_id FROM summoner_matches 
-                        WHERE summoner_id = {$meId} AND match_id IN 
+        $query = "SELECT match_id FROM summoner_matches
+                        WHERE summoner_id = {$meId} AND match_id IN
                          (SELECT match_id FROM summoner_matches WHERE summoner_id = {$otherId})";
         if ($limit != null) {
             $query .= " LIMIT {$limit}";
@@ -129,7 +131,7 @@ class Summoner extends Model
         return collect(DB::select($query))->pluck('match_id');
     }
 
-    public function versus($other, $filters, $limit = null)
+    public function versus($other, FiltersData $filters, $limit = null)
     {
         $meId = $this->id;
         $otherId = $other->id;
@@ -158,8 +160,8 @@ class Summoner extends Model
 
             return $match;
         })->filter(function ($match) use ($filters) {
-            if (Arr::get($filters, 'champion') != null) {
-                return $match->me->champion_id == $filters['champion'];
+            if ($filters->champion) {
+                return $match->me->champion_id == $filters->champion;
             }
 
             return true;

@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\ServiceProvider;
+use Spatie\LaravelData\Data;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // length key to loong
         \Illuminate\Support\Facades\Schema::defaultStringLength(120);
+        Model::shouldBeStrict();
         //Carbon::setLocale('fr');
     }
 }

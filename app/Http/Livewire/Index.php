@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Enums\TabEnum;
 use App\Helpers\RiotApi;
 use App\Http\Controllers\SyncLolController;
 use App\Jobs\UpdateRiotKeysJob;
@@ -37,7 +38,6 @@ class Index extends Component
     {
         $controller = new SyncLolController();
         $controller->index();
-        UpdateRiotKeysJob::dispatch();
         Session::flash('success', 'Synced');
     }
 
@@ -46,7 +46,7 @@ class Index extends Component
         $riotApi = new RiotApi();
 
         $summoner = $riotApi->getAndUpdateSummonerByName($this->summonerName);
-        return redirect()->route('summoner', ['summonerId' => $summoner->id]);
+        return redirect()->route(TabEnum::MATCHES->value, ['summonerId' => $summoner->id]);
     }
 
     public function render()

@@ -62,4 +62,10 @@
 			@endforeach
 		</div>
 	</div>
+    <a class="flex items-center justify-end w-1/4 mr-8">
+        <a href="{{route(\App\Enums\TabEnum::MATCH_DETAIL->value, ['matchId' => $match->match->id, 'summonerId' => $me->id])}}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded h-fit">
+            View
+        </button></a>
+    </div>
+
 </div>

@@ -2,9 +2,9 @@
 
 namespace App\Http\Livewire;
 
-use App\Enums\FLashEnum;
+use App\Data\FiltersData;
+use App\Enums\TabEnum;
 use App\Helpers\RiotApi;
-use App\Jobs\AutoUpdateJob;
 use App\Jobs\UpdateMatchesJob;
 use App\Jobs\UpdateMatchJob;
 use App\Models\Summoner as SummonerModel;
@@ -12,11 +12,12 @@ use App\Models\Version;
 use App\Traits\FlashTrait;
 use App\Traits\QueryParamsTrait;
 use Bus;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 use Livewire\WithPagination;
+use function PHPUnit\Framework\isInstanceOf;
 
 class BaseSummoner extends Component
 {
@@ -26,93 +27,77 @@ class BaseSummoner extends Component
 
     public ?SummonerModel $summoner = null;
 
-    public string $tab = 'matches';
+    public TabEnum $tab;
 
     public ?int $other = null;
 
     public string $version = '';
 
-    public $filters = [
-        'status' => null,
-        'queue' => null,
-        'dateStart' => null,
-        'dateEnd' => null,
-        'champion' => null,
-        'filterEncounters' => null,
-    ];
+    public FiltersData $filters;
 
-    public array $tabs = [
-        'summoner' => 'Matches',
-        'champions' => 'Champions',
-        'encounters' => 'Encounters',
-        'versus' => 'Versus',
-        'live_game' => 'Live Game',
-    ];
 
     public array $summonerToOpen = [];
 
     public ?int $otherSummonerId = 0;
 
     public int $summonerId = 0;
+    public ?int $matchId = 0;
 
     protected $listeners = ['filtersUpdated', 'flashMessage'];
 
     protected $queryString = [
-        'filters',
+        'filters'
     ];
 
-    public function mount($summonerId, $otherSummonerId = null)
+
+    public function boot(){
+        $filters = request()->query('filters');
+        $this->filters =  FiltersData::from($filters ?? []);
+        if (!$filters){
+            request()->query->remove('filters');
+        }
+
+    }
+
+    public function mount(int $summonerId, ?int $otherSummonerId = null, ?int $matchId=null)
     {
-        $this->summonerId = $summonerId;
-        $this->otherSummonerId = $otherSummonerId;
+
+        $this->fill([
+            "summonerId" => $summonerId,
+            "otherSummonerId" => $otherSummonerId,
+            "matchId" => $matchId,
+        ]);
         # TODO: check user has all account_apis
-        $this->version = Version::orderBy('created_at')->first()->name;
+        $this->version = Version::orderByDesc('id')->first()->name;
         $this->summoner = SummonerModel::find($summonerId);
-        if (!$this->summoner){
+        if (!$this->summoner) {
             return redirect()->route('home');
         }
         if (!$this->summoner->complete) {
             $riotApi = new RiotApi();
             $summoner = $riotApi->getAndUpdateSummonerByName($this->summoner->name);
         }
-        $this->tab = Route::currentRouteName();
-        $this->setFilters();
+        $this->tab = TabEnum::from(Route::currentRouteName());
     }
 
-    public function flashMessage( string $type, string $message)
+
+    public function flashMessage(string $type, string $message)
     {
         Session::flash($type, $message);
     }
 
-    public function setFilters()
-    {
-        $baseFilter = [
-            'status' => null,
-            'queue' => null,
-            'dateStart' => null,
-            'dateEnd' => null,
-            'champion' => null,
-            'filterEncounters' => null,
-        ];
-        $this->filters = array_merge($baseFilter, $this->filters);
-    }
+
 
     public function toggleAutoUpdate()
     {
-        $this->summoner->auto_update = ! $this->summoner->auto_update;
+        $this->summoner->auto_update = !$this->summoner->auto_update;
         $this->summoner->save();
     }
 
-    public function filtersUpdated($filters)
+    public function filtersUpdated(array $filters)
     {
-        foreach ($filters as $key => $value) {
-            if ($key == 'dateEnd' && $value != null) {
-                $this->filters[$key] = Carbon::parse($value)->addDay();
-            } else {
-                $this->filters[$key] = $value;
-            }
-        }
-        $this->filters = $filters;
+
+        $this->filters = FiltersData::from($filters);
     }
 
     public function loadEncounter($encounterId)
@@ -124,7 +109,8 @@ class BaseSummoner extends Component
         }
     }
 
-    public function fullUpdateSummoner(){
+    public function fullUpdateSummoner()
+    {
         $this->summoner->last_scanned_match = null;
         $this->summoner->save();
         $this->updateSummoner();

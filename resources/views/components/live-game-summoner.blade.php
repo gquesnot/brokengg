@@ -12,7 +12,7 @@
 		<div class="flex items-center justify-center">
 			<span class="cursor-pointer">
 				@if($participant['total'] > 0)
-					<a href="{{route('versus', ['summonerId' => $me['id'], 'otherSummonerId' => $participant['id']])}}">
+					<a href="{{route(\App\Enums\TabEnum::VERSUS->value, ['summonerId' => $me['id'], 'otherSummonerId' => $participant['id']])}}">
 						({{$participant['total']}})
 					</a>
 				@else

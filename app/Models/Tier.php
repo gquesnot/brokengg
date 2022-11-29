@@ -12,22 +12,19 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $name
  * @property int $position
  * @property string|null $img_url
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|Tier newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Tier newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Tier query()
- * @method static \Illuminate\Database\Eloquent\Builder|Tier whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tier whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tier whereImgUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tier whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tier wherePosition($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Tier whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class Tier extends Model
 {
     use HasFactory;
+    public $timestamps = false;
 
     protected $fillable = [
         'name',

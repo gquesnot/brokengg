@@ -26,13 +26,13 @@
 			<div>{{$stats['me']->win_percent}} % win</div>
 		</div>
 		<div class="mx-2 text-xl font-medium cursor-pointer">
-			<a href="{{route('summoner', ['summonerId'=> $me->id])}}">{{$me->name}}</a>
+			<a href="{{route(\App\Enums\TabEnum::MATCHES->value, ['summonerId'=> $me->id])}}">{{$me->name}}</a>
 
 		</div>
 	</div>
 	<div class="flex justify-around w-1/2">
 		<div class="mx-2 text-xl font-medium cursor-pointer">
-			<a href="{{route('summoner', ['summonerId'=> $other->id])}}">{{$other->name}}</a>
+			<a href="{{route(\App\Enums\TabEnum::MATCHES->value, ['summonerId'=> $other->id])}}">{{$other->name}}</a>
 
 		</div>
 		<div class="mx-2 flex flex-col">

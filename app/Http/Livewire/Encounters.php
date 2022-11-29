@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Data\FiltersData;
 use App\Models\Summoner;
 use App\Traits\PaginateTrait;
 use App\Traits\QueryParamsTrait;
@@ -17,15 +18,17 @@ class Encounters extends Component
 
     public $version;
 
-    public $filters = null;
+    public FiltersData $filters;
 
     public string $search = '';
 
-    public function mount($me, $version, $filters)
+    public function mount(Summoner $me, $version, FiltersData $filters)
     {
-        $this->me = $me;
-        $this->filters = $filters;
-        $this->version = $version;
+        $this->fill([
+            "me" => $me,
+            "version" => $version,
+            "filters" => $filters,
+        ]);
     }
 
     public function render()

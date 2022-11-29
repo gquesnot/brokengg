@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Data\FiltersData;
 use App\Enums\FLashEnum;
 use App\Helpers\RiotClientApi;
 use App\Helpers\Stats;
@@ -32,17 +33,16 @@ class SummonerVersus extends Component
         'vs' => 'Versus',
     ];
 
-    public $filters = null;
+    public FiltersData $filters;
 
-    public function mount(\App\Models\Summoner $me, $other, $version, $filters)
+    public function mount(Summoner $me, $version, FiltersData $filters, ?Summoner $other =null)
     {
-        $this->me = $me;
-        $this->version = $version;
-        if ($this->other != null) {
-            $this->other = \App\Models\Summoner::where('id', $other)->first();
-        } else {
-            $this->other = null;
-        }
+        $this->fill([
+            "me" => $me,
+            "other" => $other,
+            "version" => $version,
+            "filters" => $filters,
+        ]);
     }
 
     public function getVersusWithOrVs($details, $me_stat, $other_stat)

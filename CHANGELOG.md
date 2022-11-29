@@ -79,7 +79,7 @@
 ### Changed
 
 - Add auth.json to skeleton by @driesvints in https://github.com/laravel/laravel/pull/5924
-- Update `bootstrap.js` by @irsyadadl in https://github.com/laravel/laravel/pull/5929
+- Update `bootstrap.ts` by @irsyadadl in https://github.com/laravel/laravel/pull/5929
 - Add default reloading to skeleton by @timacdonald in https://github.com/laravel/laravel/pull/5927
 - Update to the latest version of laravel-vite-plugin by @jessarcher in https://github.com/laravel/laravel/pull/5943
 
@@ -88,7 +88,7 @@
 ### Added
 
 - Vite by @jessarcher in https://github.com/laravel/laravel/pull/5904
-- Added support for easy development configuration in bootstrap.js by @rennokki in https://github.com/laravel/laravel/pull/5900
+- Added support for easy development configuration in bootstrap.ts by @rennokki in https://github.com/laravel/laravel/pull/5900
 
 ### Changed
 

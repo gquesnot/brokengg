@@ -12,10 +12,17 @@
         "laravel/jetstream": "^2.12",
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
+        "laravie/parser": "2.0",
         "livewire/livewire": "^2.5",
+        "masterminds/html5": "^2.7",
+        "nyholm/psr7": "^1.5",
         "predis/predis": "^2.0",
+        "simivar/riot-php": "^1.0",
+        "spatie/laravel-data": "^2.0",
         "surgiie/transformer": "^0.2.0",
-        "symfony/process": "^6.1"
+        "symfony/http-client": "^6.1",
+        "symfony/process": "^6.1",
+        "voku/simple_html_dom": "^4.8"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.12",
@@ -24,6 +31,7 @@
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^6.1",
+        "nunomaduro/larastan": "2.0",
         "phpunit/phpunit": "^9.5.10",
         "spatie/laravel-ignition": "^1.0"
     },

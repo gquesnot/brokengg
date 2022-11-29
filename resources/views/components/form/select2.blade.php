@@ -34,8 +34,12 @@
                 allowClear: {{$nullable ? 'true' : 'false'}},
             });
             $('#{{$model_id}}').on('change', function (e) {
-				@this.
-                set('{{$model}}', $(this).val());
+                if ($(this).val() == ''){
+                    @this.set('{{$model}}', null);
+                }
+                else{
+                    @this.set('{{$model}}', $(this).val());
+                }
             });
             window.addEventListener('select2-clear', function () {
                 $('#{{$model_id}}').val(null).trigger('change');

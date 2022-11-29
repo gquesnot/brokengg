@@ -14,11 +14,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', \App\Http\Livewire\Index::class)->name('home');
-Route::get('/summoner/{summonerId}', \App\Http\Livewire\BaseSummoner::class)->name('summoner');
-Route::get('/summoner/{summonerId}/versus/{otherSummonerId}', \App\Http\Livewire\BaseSummoner::class)->name('versus');
-Route::get('/summoner/{summonerId}/champions', \App\Http\Livewire\BaseSummoner::class)->name('champions');
-Route::get('/summoner/{summonerId}/encounters', \App\Http\Livewire\BaseSummoner::class)->name('encounters');
-Route::get('/summoner/{summonerId}/live-game', \App\Http\Livewire\BaseSummoner::class)->name('live_game');
+Route::get('/summoner/{summonerId}', \App\Http\Livewire\BaseSummoner::class)->name(\App\Enums\TabEnum::MATCHES->value);
+Route::get('/summoner/{summonerId}/versus/{otherSummonerId}', \App\Http\Livewire\BaseSummoner::class)->name(\App\Enums\TabEnum::VERSUS->value);
+Route::get('/summoner/{summonerId}/champions', \App\Http\Livewire\BaseSummoner::class)->name(\App\Enums\TabEnum::CHAMPIONS->value);
+Route::get('/summoner/{summonerId}/encounters', \App\Http\Livewire\BaseSummoner::class)->name(\App\Enums\TabEnum::ENCOUNTERS->value);
+Route::get('/summoner/{summonerId}/live-game', \App\Http\Livewire\BaseSummoner::class)->name(\App\Enums\TabEnum::LIVE_GAME->value);
+Route::get('/summoner/{summonerId}/match-detail/{matchId}', \App\Http\Livewire\BaseSummoner::class)->name(\App\Enums\TabEnum::MATCH_DETAIL->value);
 Route::get('/sync', [\App\Http\Controllers\SyncLolController::class, 'index'])->name('sync');
 
 Route::middleware([

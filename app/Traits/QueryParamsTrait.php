@@ -12,7 +12,7 @@ trait QueryParamsTrait
                 if ($value != null) {
                     $result["filters[$key]"] = $value;
                 }
-                if ($key == 'filterEncounters') {
+                if ($key == 'filter_encounters') {
                     if ($value) {
                         $result["filters[$key]"] = 1;
                     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Data\FiltersData;
 use App\Models\Summoner;
 use App\Models\SummonerMatch;
 use App\Traits\PaginateTrait;
@@ -19,18 +20,19 @@ class Champions extends Component
 
     public $version;
 
-    public $filters = null;
+    public FiltersData $filters;
 
-    public function mount($me, $version, $filters)
+    public function mount(Summoner $me, $version, FiltersData $filters)
     {
-        $this->filters = $filters;
-        $this->me = $me;
-        $this->version = $version;
+        $this->fill([
+            "me" => $me,
+            "version" => $version,
+            "filters" => $filters,
+        ]);
     }
 
     public function render()
     {
-        // todo optimize this query
         $query = SummonerMatch::whereSummonerId($this->me->id)
             ->filters($this->filters);
         $championIds = SummonerMatch::whereSummonerId($this->me->id)

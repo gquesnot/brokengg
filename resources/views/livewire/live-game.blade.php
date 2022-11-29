@@ -51,11 +51,11 @@ player5 joined the lobby"
 				@foreach($lobbyParticipants as $participant)
 					<div class=" border shadow bg-blue-200 flex p-2 my-1 w-full">
 						<div class="font-medium text-xl mx-2">
-							<a href="{{route('summoner', ['summonerId'=> $participant['id']])}}">{{$participant['name']}}</a>
+							<a href="{{route(\App\Enums\TabEnum::MATCHES->value, ['summonerId'=> $participant['id']])}}">{{$participant['name']}}</a>
 						</div>
 						<div>
 
-							<a href="{{route('versus', ['summonerId' => $me['id'], 'otherSummonerId' => $participant['id']])}}">
+							<a href="{{route(\App\Enums\TabEnum::VERSUS->value, ['summonerId' => $me['id'], 'otherSummonerId' => $participant['id']])}}">
 								({{$participant['total']}})
 							</a>
 						</div>

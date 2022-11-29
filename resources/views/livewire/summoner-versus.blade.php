@@ -41,7 +41,7 @@
         </div>
         <div class="flex flex-col my-4">
             @foreach($details as $detail)
-                <x-versus-row :detail="$detail" :version="$version"/>
+                <x-versus-row :detail="$detail" :version="$version" :meId="$me->id"/>
             @endforeach
         </div>
             {{$details->links()}}

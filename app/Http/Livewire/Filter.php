@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Data\FiltersData;
 use App\Models\Champion;
 use App\Models\Matche;
 use App\Models\Queue;
@@ -15,28 +16,25 @@ use Surgiie\Transformer\DataTransformer;
 
 class Filter extends Component
 {
-    public array $filters = [
-        'queue' => null,
-        'dateStart' => null,
-        'dateEnd' => null,
-        'champion' => null,
-        'filterEncounters' => null,
-    ];
+    public FiltersData $filters;
 
     public array $options;
 
     public Collection $matchesIds;
 
-    public Summoner $me;
+    public Summoner $summoner;
 
-    public function mount(Summoner $me)
+    public function mount(Summoner $summoner, FiltersData $filters)
     {
-        $this->me = $me;
-        $this->matchesIds = collect(DB::select('SELECT match_id FROM summoner_matches WHERE  summoner_id = ?', [$me->id]))->pluck('match_id');
+        $this->fill([
+            "me" => $summoner,
+            "filters" => $filters,
+        ]);
+        $this->matchesIds = collect(DB::select('SELECT match_id FROM summoner_matches WHERE  summoner_id = ?', [$summoner->id]))->pluck('match_id');
 
         $matches = Matche::whereIn('id', $this->matchesIds)->orderByDesc('match_creation')->pluck('id');
-        $recent_champions = SummonerMatch::whereIn('match_id', $matches->forPage(1, 50))->where('summoner_id', $me->id)->select(['champion_id', DB::raw('count(*) as total')])->groupBy('champion_id')->orderBy('total', 'DESC')->limit(5)->with('champion')->get()->pluck('champion');
-        $most_played_champions = SummonerMatch::whereIn('match_id', $this->matchesIds)->where('summoner_id', $me->id)->select(['champion_id', DB::raw('count(*) as total')])->groupBy('champion_id')->orderBy('total', 'DESC')->limit(5)->with('champion')->get()->pluck('champion');
+        $recent_champions = SummonerMatch::whereIn('match_id', $matches->forPage(1, 50))->where('summoner_id', $summoner->id)->select(['champion_id', DB::raw('count(*) as total')])->groupBy('champion_id')->orderBy('total', 'DESC')->limit(5)->with('champion')->get()->pluck('champion');
+        $most_played_champions = SummonerMatch::whereIn('match_id', $this->matchesIds)->where('summoner_id', $summoner->id)->select(['champion_id', DB::raw('count(*) as total')])->groupBy('champion_id')->orderBy('total', 'DESC')->limit(5)->with('champion')->get()->pluck('champion');
         # combine both
         $champions = $recent_champions->merge($most_played_champions)->unique();
         $champion_options =[
@@ -54,7 +52,7 @@ class Filter extends Component
             })->toArray()
         ];
         $this->options = [
-            'queue' => Queue::whereIn('id', collect(DB::select('select distinct queue_id from matches where id in (SELECT match_id FROM summoner_matches WHERE  summoner_id = ?)', [$me->id]))->pluck('queue_id'))->get(['id', 'description'])->map(function ($queue) {
+            'queue' => Queue::whereIn('id', collect(DB::select('select distinct queue_id from matches where id in (SELECT match_id FROM summoner_matches WHERE  summoner_id = ?)', [$summoner->id]))->pluck('queue_id'))->get(['id', 'description'])->map(function ($queue) {
                 return [
                     'value' => $queue->id,
                     'label' => str_replace('Pick','', str_replace(' games', '', $queue->description)),
@@ -69,7 +67,7 @@ class Filter extends Component
 
     public function clearFilter($update = true)
     {
-        $this->reset('filters');
+        $this->filters = new FiltersData();
         $this->dispatchBrowserEvent('select2-clear');
         $this->resetErrorBag();
         if ($update) {
@@ -81,34 +79,27 @@ class Filter extends Component
     }
 
 
+
+
     public function applyFilters()
     {
 
-
+        $this->filters->clear_empty();
         $filters = $this->validate([
-            'filters.dateStart' => 'nullable|date',
-            'filters.dateEnd' => 'nullable|date|after:filters.dateStart',
+            'filters.date_start' => 'nullable|date',
+            'filters.date_end' => 'nullable|date|after:filters.date_start',
             'filters.champion' => 'nullable|integer|exists:champions,id',
             'filters.queue' => 'integer|nullable|exists:queues,id',
-            'filters.filterEncounters' => 'nullable|boolean',
+            'filters.filter_encounters' => 'nullable|boolean',
         ],[
-            'filters.dateEnd.after' => 'The end date must be after the start date',
+            'filters.date_end.after' => 'The end date must be after the start date',
             'filters.champion.exists' => 'The selected champion is invalid',
             'filters.queue.exists' => 'The selected queue is invalid',
         ])['filters'];
 
-        foreach ($filters as $key => $filter) {
-            if (!$filter) {
-                $filter = null;
-            } else {
-                if (in_array($key, ['champion', 'queue'])) {
-                    $filter = intval($filter);
-                }
-            }
-            $this->filters[$key] = $filter;
-        }
 
-        $this->emit('filtersUpdated', $this->filters);
+
+        $this->emit('filtersUpdated', $this->filters->toArray());
         Session::flash('success', 'Filters applied');
     }
 

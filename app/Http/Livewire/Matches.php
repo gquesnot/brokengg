@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Data\FiltersData;
 use App\Helpers\Stats;
 use App\Models\Summoner;
 use App\Models\SummonerMatch;
@@ -19,13 +20,15 @@ class Matches extends Component
 
     public $version;
 
-    public $filters = null;
+    public FiltersData $filters;
 
-    public function mount($me, $version, $filters)
+    public function mount(Summoner $me, $version, FiltersData $filters)
     {
-        $this->me = $me;
-        $this->version = $version;
-        $this->filters = $filters;
+        $this->fill([
+            "me" => $me,
+            "version" => $version,
+            "filters" => $filters,
+        ]);
     }
 
     public function showVersus($id)
@@ -36,8 +39,8 @@ class Matches extends Component
     public function render()
     {
         $matchIds = $this->me->getCachedMatchesQuery($this->filters);
-        $encountersMatchIds = $this->filters['filterEncounters'] ? $matchIds : $this->me->getCachedMatchesQuery();
-        $encounters = $this->me->getCachedEncounters($encountersMatchIds, $this->filters['filterEncounters'] ? $this->filters : []);
+        $encountersMatchIds = $this->filters->filter_encounters ? $matchIds : $this->me->getCachedMatchesQuery();
+        $encounters = $this->me->getCachedEncounters($encountersMatchIds, $this->filters->filter_encounters ? $this->filters : null);
 
         $matches = SummonerMatch::whereIn('match_id', $matchIds->forPage($this->page, $this->perPage))
             ->where('summoner_id', $this->me->id)

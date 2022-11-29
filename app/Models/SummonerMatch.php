@@ -217,16 +217,16 @@ class SummonerMatch extends Model
     public function scopeFilters(Builder $query, $filters): Builder
     {
         if (! empty($filters)) {
-            if (Arr::get($filters, 'queue') != null || Arr::get($filters, 'dateStart') != null || Arr::get($filters, 'dateEnd') != null) {
+            if (Arr::get($filters, 'queue') != null || Arr::get($filters, 'date_start') != null || Arr::get($filters, 'date_end') != null) {
                 $query = $query->whereHas('match', function (Builder $query) use ($filters) {
                     if (Arr::get($filters, 'queue') != null) {
                         $query->where('queue_id', $filters['queue']);
                     }
-                    if (Arr::get($filters, 'dateStart') != null) {
-                        $query->where('match_creation', '>=', $filters['dateStart']);
+                    if (Arr::get($filters, 'date_start') != null) {
+                        $query->where('match_creation', '>=', $filters['date_start']);
                     }
-                    if (Arr::get($filters, 'dateEnd') != null) {
-                        $query->where('match_creation', '<=', $filters['dateEnd']);
+                    if (Arr::get($filters, 'date_end') != null) {
+                        $query->where('match_creation', '<=', $filters['date_end']);
                     }
                 });
             }

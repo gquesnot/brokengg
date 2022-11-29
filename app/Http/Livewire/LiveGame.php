@@ -36,10 +36,12 @@ class LiveGame extends Component
 
     public ?Collection $participants = null;
 
-    public function mount($me, $version)
+    public function mount(Summoner $me, $version)
     {
-        $this->version = $version;
-        $this->me = $me;
+        $this->fill([
+            "me" => $me,
+            "version" => $version,
+        ]);
         $this->getLiveGame();
     }
 

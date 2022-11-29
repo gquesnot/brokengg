@@ -17,13 +17,11 @@ return new class extends Migration
             $table->id();
             $table->string('map');
             $table->string('description');
-            $table->timestamps();
         });
         Schema::create('modes', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('description');
-            $table->timestamps();
         });
         Schema::create('champions', function (Blueprint $table) {
             $table->id();
@@ -31,14 +29,19 @@ return new class extends Migration
             $table->string('title');
             $table->string('img_url');
             $table->string('champion_id');
-            $table->timestamps();
+            $table->json('stats')->nullable();
         });
         Schema::create('items', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->text('description');
+            $table->json('tags');
+            $table->integer('gold');
+            $table->json('stats')->nullable();
+            $table->json('mythic_stats')->nullable();
+            $table->string('colloq');
             $table->string('img_url');
-            $table->timestamps();
+            $table->string('type')->nullable();
         });
     }
 

@@ -9,13 +9,13 @@
 		@if($participant->summoner_id == $me->id)
 			<i class="fa-solid fa-crown"></i>
 		@else
-			<a href="{{route('versus', ['summonerId' => $me->id, 'otherSummonerId' => $participant->summoner_id]).$this->getParamsUrl()}}"><span
+			<a href="{{route(\App\Enums\TabEnum::VERSUS->value, ['summonerId' => $me->id, 'otherSummonerId' => $participant->summoner_id]).$this->getParamsUrl()}}"><span
 					{{--                                                wire:click="showVersus({{$participant->summoner_id}})"--}}
 					class="cursor-pointer">
                                                                 ({{$participant->total}})
                                                             </span></a>
 		@endif
-		<a href="{{route('summoner', ['summonerId' => $participant->summoner_id])}}"
+		<a href="{{route(\App\Enums\TabEnum::MATCHES->value, ['summonerId' => $participant->summoner_id])}}"
 		   class=" ml-2 truncate w-36">
 			{{$participant->summoner->name}}
 		</a>
