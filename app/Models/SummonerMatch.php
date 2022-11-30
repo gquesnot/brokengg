@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Data\match_timeline\PerksData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,6 +34,7 @@ use Illuminate\Support\Facades\DB;
  * @property int $triple_kills
  * @property int $quadra_kills
  * @property int $penta_kills
+ * @property \Spatie\LaravelData\Contracts\BaseData|null $perks
  * @property-read \App\Models\Champion|null $champion
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Item[] $items
  * @property-read int|null $items_count
@@ -58,6 +60,7 @@ use Illuminate\Support\Facades\DB;
  * @method static Builder|SummonerMatch whereMatchId($value)
  * @method static Builder|SummonerMatch whereMinionsKilled($value)
  * @method static Builder|SummonerMatch wherePentaKills($value)
+ * @method static Builder|SummonerMatch wherePerks($value)
  * @method static Builder|SummonerMatch whereQuadraKills($value)
  * @method static Builder|SummonerMatch whereStats($value)
  * @method static Builder|SummonerMatch whereSummonerId($value)
@@ -92,11 +95,13 @@ class SummonerMatch extends Model
         'triple_kills',
         'quadra_kills',
         'penta_kills',
+        'perks',
     ];
 
     protected $casts = [
         'stats' => 'array',
         'challenges' => 'array',
+        'perks' => PerksData::class,
     ];
 
     public function csPerMinute(): Attribute

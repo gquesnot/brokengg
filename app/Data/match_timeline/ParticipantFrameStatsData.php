@@ -2,14 +2,16 @@
 
 namespace App\Data\match_timeline;
 
-use App\Data\DataJsonCast;
-use Arr;
-use Livewire\Wireable;
+use App\interfaces\DataMappingInterface;
+use App\Traits\DataMappingTrait;
+use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 #[TypeScript]
-class ParticipantFrameStatsData extends DataJsonCast implements Wireable
+class ParticipantFrameStatsData extends Data implements DataMappingInterface
 {
+    use DataMappingTrait;
+
     public function __construct(
         public int $ad = 0,
         public int $ah = 0,
@@ -37,33 +39,32 @@ class ParticipantFrameStatsData extends DataJsonCast implements Wireable
     ) {
     }
 
-    public static function from_api($datas)
+    public static function getMapping(): array
     {
-        $stats = new self();
-        $stats->ah = Arr::get($datas, 'abilityHaste', 0);
-        $stats->ap = Arr::get($datas, 'abilityPower', 0);
-        $stats->armor = Arr::get($datas, 'armor', 0);
-        $stats->armor_pen_flat = Arr::get($datas, 'armorPen', 0);
-        $stats->armor_pen_percent = Arr::get($datas, 'armorPenPercent', 0);
-        $stats->ad = Arr::get($datas, 'attackDamage', 0);
-        $stats->as = Arr::get($datas, 'attackSpeed', 0);
-        $stats->armor_pen_percent_bonus = Arr::get($datas, 'bonusArmorPenPercent', 0);
-        $stats->magic_pen_percent_bonus = Arr::get($datas, 'bonusMagicPenPercent', 0);
-        $stats->tenacity = Arr::get($datas, 'ccReduction', 0);
-        $stats->cdr = Arr::get($datas, 'cooldownReduction', 0);
-        $stats->hp = Arr::get($datas, 'healthMax', 0);
-        $stats->hp_regen = Arr::get($datas, 'healthRegen', 0);
-        $stats->lifesteal_percent = Arr::get($datas, 'lifesteal', 0);
-        $stats->magi_pen_flat = Arr::get($datas, 'magicPen', 0);
-        $stats->magic_pen_percent = Arr::get($datas, 'magicPenPercent', 0);
-        $stats->mr = Arr::get($datas, 'magicResist', 0);
-        $stats->ms = Arr::get($datas, 'movementSpeed', 0);
-        $stats->omnivamp_percent = Arr::get($datas, 'omnivamp', 0);
-        $stats->physical_vamp = Arr::get($datas, 'physicalVamp', 0);
-        $stats->mana = Arr::get($datas, 'powerMax', 0);
-        $stats->mana_regen = Arr::get($datas, 'powerRegen', 0);
-        $stats->spell_vamp_percent = Arr::get($datas, 'spellVamp', 0);
-
-        return $stats;
+        return [
+            'abilityHaste' => 'ah',
+            'abilityPower' => 'ap',
+            'armor' => 'armor',
+            'armorPen' => 'armor_pen_flat',
+            'armorPenPercent' => 'armor_pen_percent',
+            'attackDamage' => 'ad',
+            'attackSpeed' => 'as',
+            'bonusArmorPenPercent' => 'armor_pen_percent_bonus',
+            'bonusMagicPenPercent' => 'magic_pen_percent_bonus',
+            'ccReduction' => 'tenacity',
+            'cooldownReduction' => 'cdr',
+            'healthMax' => 'hp',
+            'healthRegen' => 'hp_regen',
+            'lifesteal' => 'lifesteal_percent',
+            'magicPen' => 'magi_pen_flat',
+            'magicPenPercent' => 'magic_pen_percent',
+            'magicResist' => 'mr',
+            'movementSpeed' => 'ms',
+            'omnivamp' => 'omnivamp_percent',
+            'physicalVamp' => 'physical_vamp',
+            'powerMax' => 'mana',
+            'powerRegen' => 'mana_regen',
+            'spellVamp' => 'spell_vamp_percent',
+        ];
     }
 }

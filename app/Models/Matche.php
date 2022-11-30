@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $match_duration
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Spatie\LaravelData\DataCollection|null $details
+ * @property \Spatie\LaravelData\Contracts\BaseData|null $details
  * @property-read mixed $since_match_end
  * @property-read \App\Models\Map|null $map
  * @property-read \App\Models\Mode|null $mode
@@ -35,7 +35,6 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder|Matche newQuery()
  * @method static Builder|Matche query()
  * @method static Builder|Matche whereCreatedAt($value)
- * @method static Builder|Matche whereDetails($value)
  * @method static Builder|Matche whereId($value)
  * @method static Builder|Matche whereMapId($value)
  * @method static Builder|Matche whereMatchCreation($value)

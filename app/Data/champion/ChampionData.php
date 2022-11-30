@@ -16,14 +16,4 @@ class ChampionData extends DataJsonCast implements Wireable
         public ChampionStats $stats,
     ) {
     }
-
-    public static function from_model(array $champion)
-    {
-        return new ChampionData(
-            id: $champion['id'],
-            name: $champion['name'],
-            img_url: $champion['img_url'],
-            stats: ChampionStats::withoutMagicalCreationFrom($champion['stats']),
-        );
-    }
 }

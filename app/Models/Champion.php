@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Data\champion\ChampionData;
 use App\Data\champion\ChampionStats;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\LaravelData\WithData;
 
 /**
  * App\Models\Champion
@@ -15,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $title
  * @property string $img_url
  * @property string $champion_id
- * @property \App\Data\champion\ChampionStats|null $stats
+ * @property ChampionStats |null $stats
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
  *
@@ -33,6 +35,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Champion extends Model
 {
     use HasFactory;
+    use WithData;
+
+    protected $dataClass = ChampionData::class;
 
     public $timestamps = false;
 

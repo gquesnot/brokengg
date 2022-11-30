@@ -2,14 +2,17 @@
 
 namespace App\Data\item;
 
-use App\Data\DataJsonCast;
-use Illuminate\Support\Arr;
-use Livewire\Wireable;
+use App\interfaces\DataMappingInterface;
+use App\Traits\DataMappingTrait;
+use App\Traits\JsonCastTrait;
+use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 #[TypeScript]
-class ItemMythicStats extends DataJsonCast implements Wireable
+class ItemMythicStats extends Data implements DataMappingInterface
 {
+    use DataMappingTrait, JsonCastTrait;
+
     public function __construct(
         public int $hp = 0,
         public int $ah = 0,
@@ -30,27 +33,25 @@ class ItemMythicStats extends DataJsonCast implements Wireable
     ) {
     }
 
-    public static function from_api($datas): ItemMythicStats
+    public static function getMapping(): array
     {
-        $stats = new self();
-
-        $stats->hp = Arr::get($datas, 'health', 0);
-        $stats->hp_percent = Arr::get($datas, 'health_percent', 0);
-        $stats->ah = Arr::get($datas, 'ability_haste', 0);
-        $stats->ms = Arr::get($datas, 'movement_speed', 0);
-        $stats->ms_percent = Arr::get($datas, 'movement_speed_percent', 0);
-        $stats->omnivamp_percent = Arr::get($datas, 'omnivamp_percent', 0);
-        $stats->heal_power_percent = Arr::get($datas, 'increased_heal', 0);
-        $stats->as_percent = Arr::get($datas, 'attack_speed_percent', 0);
-        $stats->ap = Arr::get($datas, 'ability_power', 0);
-        $stats->ad = Arr::get($datas, 'attack_damage', 0);
-        $stats->armor = Arr::get($datas, 'armor', 0);
-        $stats->mr = Arr::get($datas, 'magic_resistance', 0);
-        $stats->armor_pen_percent = Arr::get($datas, 'armor_penetration_percent', 0);
-        $stats->armor_pen_flat = Arr::get($datas, 'lethality', 0);
-        $stats->magic_pen_percent = Arr::get($datas, 'magic_penetration_percent', 0);
-        $stats->magic_pen_flat = Arr::get($datas, 'magic_penetration', 0);
-
-        return $stats;
+        return [
+            'health' => 'hp',
+            'health_percent' => 'hp_percent',
+            'ability_haste' => 'ah',
+            'movement_speed' => 'ms',
+            'movement_speed_percent' => 'ms_percent',
+            'omnivamp_percent' => 'omnivamp_percent',
+            'increased_heal' => 'heal_power_percent',
+            'attack_speed_percent' => 'as_percent',
+            'ability_power' => 'ap',
+            'attack_damage' => 'ad',
+            'armor' => 'armor',
+            'magic_resistance' => 'mr',
+            'armor_penetration_percent' => 'armor_pen_percent',
+            'lethality' => 'armor_pen_flat',
+            'magic_penetration_percent' => 'magic_pen_percent',
+            'magic_penetration' => 'magic_pen_flat',
+        ];
     }
 }

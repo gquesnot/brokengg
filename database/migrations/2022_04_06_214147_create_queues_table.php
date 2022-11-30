@@ -37,7 +37,7 @@ return new class() extends Migration
             $table->text('description');
             $table->json('tags');
             $table->integer('gold');
-            $table->json('stats')->nullable();
+            $table->json('stats');
             $table->json('mythic_stats')->nullable();
             $table->string('colloq');
             $table->string('img_url');

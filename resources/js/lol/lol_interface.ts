@@ -14,7 +14,7 @@ interface LolInterface  {
     participant_id: number;
     open_modal: boolean;
     toggle_change_items: boolean;
-    all_items: { [name: string]: Item };
+    all_items:  Record<string, Item>;
     modified_items: Item[];
     items: Item[];
 

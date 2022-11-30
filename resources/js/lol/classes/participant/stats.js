@@ -1,4 +1,7 @@
 import { round } from "../../util/util";
+import { AdaptativeStats } from "../../data/adaptative_stats";
+import HpPerk from "../../data/hp_perk";
+import { isNumber } from "lodash";
 export default class Stats {
     constructor() {
         this.ad = 0;
@@ -24,7 +27,7 @@ export default class Stats {
         this.heal_power_percent = 0;
         this.ah = 0;
         this.cdr = 0;
-        this.adaptative = 0;
+        this.adaptative = new AdaptativeStats();
         this.magic_pen_percent_bonus = 0;
         this.armor_pen_percent_bonus = 0;
         this.as = 0;
@@ -42,9 +45,11 @@ export default class Stats {
         this.mr_reduction = 0;
         this.on_hit_ad = 0;
         this.on_hit_ap = 0;
+        this.base_ad = 0;
     }
     reset() {
         this.ad = 0;
+        this.base_ad = 0;
         this.ap = 0;
         this.armor = 0;
         this.armor_pen_percent = 0;
@@ -67,7 +72,8 @@ export default class Stats {
         this.omnivamp_percent = 0;
         this.tenacity_percent = 0;
         this.heal_power_percent = 0;
-        this.adaptative = 0;
+        this.adaptative.ad = 0;
+        this.adaptative.ap = 0;
         this.on_hit_ad = 0;
         this.on_hit_ap = 0;
         this.as = 0;
@@ -139,6 +145,7 @@ export default class Stats {
     }
     add_champion(champion, level) {
         this.ad = this.apply_grow(champion.stats.ad, champion.stats.ad_per_level, level);
+        this.base_ad = this.ad;
         this.hp = this.apply_grow(champion.stats.hp, champion.stats.hp_per_level, level);
         this.armor = this.apply_grow(champion.stats.armor, champion.stats.armor_per_level, level);
         this.mr = this.apply_grow(champion.stats.mr, champion.stats.mr_per_level, level);
@@ -156,6 +163,34 @@ export default class Stats {
         this.ah = frame.stats.ah;
         this.cdr = frame.stats.cdr;
         this.hp = frame.stats.hp;
+    }
+    add_perks(perks, level) {
+        this.add_perk(perks.get_defense(), level);
+        this.add_perk(perks.get_offense(), level);
+        this.add_perk(perks.get_flex(), level);
+    }
+    add_perk(perk, level) {
+        if (perk.key == "adaptative" && perk.value instanceof AdaptativeStats) {
+            this.adaptative = perk.value;
+        }
+        else if (perk.key == "hp" && perk.value instanceof HpPerk) {
+            this.hp += perk.value.base + perk.value.per_level * level;
+        }
+        else if (isNumber(perk.value)) {
+            switch (perk.key) {
+                case "armor":
+                    this.armor += perk.value;
+                    break;
+                case "ah":
+                    this.ah += perk.value;
+                    break;
+                case "as":
+                    this.as_percent += perk.value;
+                    break;
+                case "mr":
+                    this.mr += perk.value;
+            }
+        }
     }
     round_all() {
         this.ad = round(this.ad);

@@ -3,6 +3,7 @@ import Participant from "./classes/participant/participant";
 import ItemsController from "./classes/items_controller";
 import { plainToClass } from 'class-transformer';
 import { has_guinsoo, has_ie, is_guinsoo, is_ie, } from "./util/util";
+import ParticipantPerks from "./classes/participant/participant_perks";
 export default class Lol {
     constructor(participants, items, version, participant_id) {
         this.items_categories = items_categories;
@@ -22,6 +23,7 @@ export default class Lol {
         this.version = version;
         participants.forEach((participant) => {
             participant = plainToClass(Participant, participant);
+            participant.perks = plainToClass(ParticipantPerks, participant.perks);
             this.participants.push(participant);
         });
         this.all_items = items;
@@ -31,6 +33,7 @@ export default class Lol {
         this.participant_id = participant_id;
         this.participant = this.participants[participant_id - 1];
         this.max_frame = this.participant.frames.length - 1;
+        console.info(this.participant);
         this.select_participant(participant_id);
     }
     select_participant(participant_id) {
@@ -73,14 +76,15 @@ export default class Lol {
             this.items_controller.update_items(this.participant, this.frame_id);
             this.items = this.items_controller.items_from_list();
         }
-        this.participant.add_champion_stats(this.frame_id);
+        this.participant.add_champion_stats();
+        this.participant.add_perks_stats();
         this.participant.calulate_items(this.items);
         this.calculate_gold();
         this.participant.calculate_dps(this.items);
         this.participant.stats.round_all();
     }
     calculate_gold() {
-        this.total_gold = this.participant.frames[this.frame_id].total_gold;
+        this.total_gold = this.participant.current_frame.total_gold;
         this.current_gold = this.total_gold;
         this.items.forEach((item) => {
             this.current_gold -= item.gold;

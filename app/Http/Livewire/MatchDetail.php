@@ -44,17 +44,14 @@ class MatchDetail extends Component
     public function render()
     {
         $api = new RiotApi();
-        if (! $this->match->details) {
-            $this->match->details = $api->getMatchTimeline($this->match)->toArray();
-            $this->match->save();
-        }
-        $participant_idx = $this->match->details->first(function ($participant) {
+        $participants = $api->getMatchTimeline($this->match);
+        $participant_idx = $participants->first(function ($participant) {
             return $participant->puuid == $this->me->puuid;
         })->id;
         $items = $this->getItems();
 
         return view('livewire.match-detail', [
-            'participants' => $this->match->details->toArray(),
+            'participants' => $participants->toArray(),
             'items' => $items->toArray(),
             'participant_idx' => $participant_idx,
         ]);

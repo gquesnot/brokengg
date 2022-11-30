@@ -8,10 +8,10 @@ export default class ItemsController {
     to_buy: number[] = [];
     gold_diff: number = 0;
     events: ShopEvent[][] = [];
-    base_items : { [name: string]: Item } = {};
+    base_items :  Record<string, Item> = {};
 
 
-    constructor(items: { [name: string]: Item }) {
+    constructor(items:  Record<string, Item>) {
         this.base_items = items;
     }
 
@@ -42,12 +42,8 @@ export default class ItemsController {
     }
 
     add_events(events: ShopEvent[]) {
-        let has_undo = events.some((event) => {
-            return event.type === "ITEM_UNDO";
-        });
-        let only_destroyed = events.every((event) => {
-            return event.type === "ITEM_DESTROYED";
-        });
+        let has_undo = events.some((event) => event.type === "ITEM_UNDO");
+        let only_destroyed = events.every((event) => event.type === "ITEM_DESTROYED");
         if (!has_undo && !only_destroyed) {
             events.forEach((event) => {
                 if (event.type === "ITEM_PURCHASED") {

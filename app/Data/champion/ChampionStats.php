@@ -2,14 +2,17 @@
 
 namespace App\Data\champion;
 
-use App\Data\DataJsonCast;
-use Illuminate\Support\Arr;
-use Livewire\Wireable;
+use App\interfaces\DataMappingInterface;
+use App\Traits\DataMappingTrait;
+use App\Traits\JsonCastTrait;
+use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 #[TypeScript]
-class ChampionStats extends DataJsonCast implements Wireable
+class ChampionStats extends Data implements DataMappingInterface
 {
+    use DataMappingTrait, JsonCastTrait;
+
     public function __construct(
         public int $hp = 0,
         public int $hp_per_level = 0,
@@ -34,31 +37,29 @@ class ChampionStats extends DataJsonCast implements Wireable
     ) {
     }
 
-    public static function from_api($datas): ChampionStats
+    public static function getMapping(): array
     {
-        $stats = new ChampionStats();
-        $stats->hp = Arr::get($datas, 'hp', 0);
-        $stats->hp_per_level = Arr::get($datas, 'hpperlevel', 0);
-        $stats->hp_regen = Arr::get($datas, 'hpregen', 0);
-        $stats->hp_regen_per_level = Arr::get($datas, 'hpregenperlevel', 0);
-        $stats->mp = Arr::get($datas, 'mp', 0);
-        $stats->mp_per_level = Arr::get($datas, 'mpperlevel', 0);
-        $stats->mp_regen = Arr::get($datas, 'mpregen', 0);
-        $stats->mp_regen_per_level = Arr::get($datas, 'mpregenperlevel', 0);
-        $stats->ms = Arr::get($datas, 'movespeed', 0);
-
-        $stats->armor = Arr::get($datas, 'armor', 0);
-        $stats->armor_per_level = Arr::get($datas, 'armorperlevel', 0);
-        $stats->mr = Arr::get($datas, 'spellblock', 0);
-        $stats->mr_per_level = Arr::get($datas, 'spellblockperlevel', 0);
-        $stats->attack_range = Arr::get($datas, 'attackrange', 0);
-        $stats->ad = Arr::get($datas, 'attackdamage', 0);
-        $stats->ad_per_level = Arr::get($datas, 'attackdamageperlevel', 0);
-        $stats->crit_percent = Arr::get($datas, 'crit', 0);
-        $stats->crit_percent_per_level = Arr::get($datas, 'critperlevel', 0);
-        $stats->base_as = Arr::get($datas, 'attackspeed', 0);
-        $stats->as_percent_per_level = Arr::get($datas, 'attackspeedperlevel', 0);
-
-        return $stats;
+        return [
+            'hp' => 'hp',
+            'hpperlevel' => 'hp_per_level',
+            'hpregen' => 'hp_regen',
+            'hpregenperlevel' => 'hp_regen_per_level',
+            'mp' => 'mp',
+            'mpperlevel' => 'mp_per_level',
+            'mpregen' => 'mp_regen',
+            'mpregenperlevel' => 'mp_regen_per_level',
+            'movespeed' => 'ms',
+            'armor' => 'armor',
+            'armorperlevel' => 'armor_per_level',
+            'spellblock' => 'mr',
+            'spellblockperlevel' => 'mr_per_level',
+            'attackrange' => 'attack_range',
+            'attackdamage' => 'ad',
+            'attackdamageperlevel' => 'ad_per_level',
+            'crit' => 'crit_percent',
+            'critperlevel' => 'crit_percent_per_level',
+            'attackspeed' => 'base_as',
+            'attackspeedperlevel' => 'as_percent_per_level',
+        ];
     }
 }

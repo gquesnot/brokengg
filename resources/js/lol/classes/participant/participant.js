@@ -2,6 +2,7 @@ import { Frame } from "./frame/frame";
 import { Champion } from "../champion/champion";
 import Stats from "./stats";
 import { has_brk, has_dominik, has_guinsoo, has_ie, has_nashor, has_rageknife, has_witsend } from "../../util/util";
+import ParticipantPerks from "./participant_perks";
 export default class Participant {
     constructor() {
         this.frames = [];
@@ -14,11 +15,14 @@ export default class Participant {
         this.profile_icon_id = 0;
         this.puuid = "";
         this.stats = new Stats();
+        this.perks = new ParticipantPerks();
     }
-    add_champion_stats(frame_id) {
-        let frame = this.frames[frame_id];
+    add_perks_stats() {
+        this.stats.add_perks(this.perks, this.current_frame.level);
+    }
+    add_champion_stats() {
         if (this.champion !== null) {
-            this.stats.add_champion(this.champion, frame.level);
+            this.stats.add_champion(this.champion, this.current_frame.level);
         }
     }
     set_stats_from_current_frame() {
@@ -44,8 +48,11 @@ export default class Participant {
         else {
             this.stats.cdr = 0;
         }
-        if (this.stats.adaptative != 0) {
-            // todo: handle adpative, compare ad - base ad and ap
+        if (this.stats.adaptative.ad || this.stats.adaptative.ap) {
+            if (this.stats.base_ad > this.stats.ap) {
+                this.stats.ad += this.stats.adaptative.ad;
+                this.stats.ap += this.stats.adaptative.ap;
+            }
         }
     }
     calculate_dps(items) {

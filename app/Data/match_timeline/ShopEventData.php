@@ -2,13 +2,16 @@
 
 namespace App\Data\match_timeline;
 
-use App\Data\DataJsonCast;
-use Livewire\Wireable;
+use App\interfaces\DataMappingInterface;
+use App\Traits\DataMappingTrait;
+use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 #[TypeScript]
-class ShopEventData extends DataJsonCast implements Wireable
+class ShopEventData extends Data implements DataMappingInterface
 {
+    use DataMappingTrait;
+
     public function __construct(
         public string $type,
         public int $timestamp,
@@ -18,5 +21,18 @@ class ShopEventData extends DataJsonCast implements Wireable
         public ?int $after_id = null,
         public ?int $before_id = null,
     ) {
+    }
+
+    public static function getMapping(): array
+    {
+        return [
+            'type' => 'type',
+            'timestamp' => 'timestamp',
+            'participantId' => 'participant_id',
+            'itemId' => 'item_id',
+            'goldGain' => 'gold_gain',
+            'afterId' => 'after_id',
+            'beforeId' => 'before_id',
+        ];
     }
 }

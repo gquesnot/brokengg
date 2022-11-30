@@ -4,6 +4,11 @@ import Item from "../item/item";
 import {round} from "../../util/util";
 import {Frame} from "./frame/frame";
 import {Champion} from "../champion/champion";
+import ParticipantPerks from "./participant_perks";
+import {AdaptativeStats} from "../../data/adaptative_stats";
+import {Perk} from "../../data/perk";
+import HpPerk from "../../data/hp_perk";
+import {isNumber} from "lodash";
 
 export default class Stats {
     ad: number = 0;
@@ -27,13 +32,13 @@ export default class Stats {
     omnivamp_percent: number = 0;
     tenacity_percent: number = 0;
     heal_power_percent: number = 0;
-    ah:number= 0;
+    ah: number = 0;
     cdr: number = 0;
-    adaptative: number = 0;
-    magic_pen_percent_bonus:number = 0;
+    adaptative: AdaptativeStats = new AdaptativeStats();
+    magic_pen_percent_bonus: number = 0;
     armor_pen_percent_bonus: number = 0;
 
-    as : number = 0;
+    as: number = 0;
     dps_ad: number = 0;
     dps_ap: number = 0;
     dps_true: number = 0;
@@ -41,14 +46,15 @@ export default class Stats {
     dps_ad_damage_taken: number = 0;
     dps_ap_damage_taken: number = 0;
     dps_true_damage_taken: number = 0;
-    dps_total_damage_taken:number = 0;
+    dps_total_damage_taken: number = 0;
     dps_total: number = 0;
     real_armor: number = 0;
-    real_mr : number = 0;
+    real_mr: number = 0;
     armor_reduction: number = 0;
     mr_reduction: number = 0;
-    on_hit_ad : number = 0;
+    on_hit_ad: number = 0;
     on_hit_ap: number = 0;
+    base_ad:number = 0;
 
     constructor() {
 
@@ -56,6 +62,7 @@ export default class Stats {
 
     reset() {
         this.ad = 0;
+        this.base_ad = 0;
         this.ap = 0;
         this.armor = 0;
         this.armor_pen_percent = 0;
@@ -78,7 +85,8 @@ export default class Stats {
         this.omnivamp_percent = 0;
         this.tenacity_percent = 0;
         this.heal_power_percent = 0;
-        this.adaptative = 0;
+        this.adaptative.ad = 0;
+        this.adaptative.ap = 0;
 
         this.on_hit_ad = 0;
         this.on_hit_ap = 0;
@@ -102,7 +110,7 @@ export default class Stats {
 
     }
 
-    add_item(item: Item, nb_legendary: number=0) {
+    add_item(item: Item, nb_legendary: number = 0) {
         if (item.stats) {
             this.add_item_stats(item.stats);
         }
@@ -154,13 +162,14 @@ export default class Stats {
     }
 
 
-    apply_grow(base:number, grow: number, level:number){
+    apply_grow(base: number, grow: number, level: number) {
         level--;
         return base + grow * level * (0.7025 + 0.0175 * level);
     }
 
     add_champion(champion: Champion, level: number) {
         this.ad = this.apply_grow(champion.stats.ad, champion.stats.ad_per_level, level);
+        this.base_ad= this.ad;
         this.hp = this.apply_grow(champion.stats.hp, champion.stats.hp_per_level, level);
         this.armor = this.apply_grow(champion.stats.armor, champion.stats.armor_per_level, level);
         this.mr = this.apply_grow(champion.stats.mr, champion.stats.mr_per_level, level);
@@ -169,19 +178,48 @@ export default class Stats {
     }
 
     add_frame(frame: Frame) {
-            this.ad = frame.stats.ad;
-            this.ap = frame.stats.ap;
-            this.armor = frame.stats.armor;
-            this.mr = frame.stats.mr;
-            this.armor_pen_percent = frame.stats.armor_pen_percent + frame.stats.armor_pen_percent_bonus;
-            this.armor_pen_flat = frame.stats.armor_pen_flat + frame.stats.magic_pen_percent_bonus;
-            this.as = frame.stats.as;
-            this.ah = frame.stats.ah;
-            this.cdr = frame.stats.cdr;
-            this.hp = frame.stats.hp;
+        this.ad = frame.stats.ad;
+        this.ap = frame.stats.ap;
+        this.armor = frame.stats.armor;
+        this.mr = frame.stats.mr;
+        this.armor_pen_percent = frame.stats.armor_pen_percent + frame.stats.armor_pen_percent_bonus;
+        this.armor_pen_flat = frame.stats.armor_pen_flat + frame.stats.magic_pen_percent_bonus;
+        this.as = frame.stats.as;
+        this.ah = frame.stats.ah;
+        this.cdr = frame.stats.cdr;
+        this.hp = frame.stats.hp;
     }
 
-    round_all(){
+    add_perks(perks: ParticipantPerks, level: number) {
+        this.add_perk(perks.get_defense(), level);
+        this.add_perk(perks.get_offense(), level);
+        this.add_perk(perks.get_flex(), level);
+    }
+
+    add_perk(perk: Perk, level: number) {
+        if (perk.key == "adaptative" && perk.value instanceof AdaptativeStats) {
+            this.adaptative = perk.value;
+        } else if (perk.key == "hp" && perk.value instanceof HpPerk) {
+            this.hp += perk.value.base + perk.value.per_level * level;
+        } else if (isNumber(perk.value)) {
+            switch (perk.key) {
+                case "armor":
+                    this.armor += perk.value;
+                    break;
+                case "ah":
+                    this.ah += perk.value;
+                    break;
+                case "as":
+                    this.as_percent += perk.value;
+                    break;
+                case "mr":
+                    this.mr += perk.value;
+            }
+        }
+    }
+
+
+    round_all() {
         this.ad = round(this.ad);
         this.ap = round(this.ap);
         this.armor = round(this.armor);
@@ -227,11 +265,11 @@ export default class Stats {
     }
 
 
-    total_magic_pen() : string{
+    total_magic_pen(): string {
         return this.magic_pen_flat + ' + ' + this.magic_pen_percent + '% + ' + this.magic_pen_percent_bonus + '%'
     }
 
-    total_armor_pen() : string{
+    total_armor_pen(): string {
         return this.armor_pen_flat + ' + ' + this.armor_pen_percent + '% + ' + this.armor_pen_percent_bonus + '%'
     }
 }

@@ -29,12 +29,8 @@ export default class ItemsController {
         }
     }
     add_events(events) {
-        let has_undo = events.some((event) => {
-            return event.type === "ITEM_UNDO";
-        });
-        let only_destroyed = events.every((event) => {
-            return event.type === "ITEM_DESTROYED";
-        });
+        let has_undo = events.some((event) => event.type === "ITEM_UNDO");
+        let only_destroyed = events.every((event) => event.type === "ITEM_DESTROYED");
         if (!has_undo && !only_destroyed) {
             events.forEach((event) => {
                 if (event.type === "ITEM_PURCHASED") {

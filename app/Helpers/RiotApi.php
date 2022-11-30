@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Data\match_timeline\ParticipantData;
+use App\Data\match_timeline\PerksData;
 use App\Models\Champion;
 use App\Models\ItemSummonerMatch;
 use App\Models\Map;
@@ -168,10 +169,10 @@ class RiotApi
     {
         $url = "https://europe.api.riotgames.com/lol/match/v5/matches/{$match->match_id}/timeline";
         $match_timeline = self::object_to_array($this->doGetWithRetry($url)->info);
-        $match->load('participants:id,champion_id,summoner_id,won,match_id', 'participants.champion:id,name,champion_id,stats,img_url', 'participants.items:id', 'participants.summoner:id,profile_icon_id,name,puuid');
+        $match->load('participants:id,champion_id,summoner_id,won,match_id,perks', 'participants.champion:id,name,champion_id,stats,img_url', 'participants.items:id', 'participants.summoner:id,profile_icon_id,name,puuid');
 
         return $match->participants->map(function (SummonerMatch $participant, int $index) use ($match_timeline) {
-            return ParticipantData::from_api($participant, $index + 1, $match_timeline);
+            return ParticipantData::fromApi($participant, $index + 1, $match_timeline);
         });
     }
 
@@ -254,6 +255,11 @@ class RiotApi
             if ($participant->deaths > 0) {
                 $kda = $kda / $participant->deaths;
             }
+            $summonerMatchParams['perks'] = PerksData::from([
+                'offense' => $participant->perks->statPerks->offense,
+                'defense' => $participant->perks->statPerks->defense,
+                'flex' => $participant->perks->statPerks->flex,
+            ]);
             $summonerMatchParams['kda'] = $kda;
             $allKills = $info->teams[($participant->teamId == 100 ? 0 : 1)]->objectives->champion->kills;
             $summonerMatchParams['kill_participation'] = $participant->kills + $participant->assists;

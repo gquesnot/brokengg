@@ -67,19 +67,27 @@ class SyncLolController extends Controller
         $champions = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/cdn/'.$version.'/data/en_US/champion.json')->json();
         foreach ($champions['data'] as $championName => $champion) {
             $champion_detail = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/cdn/'.$version.'/data/en_US/champion/'.$championName.'.json')->json()['data'][$championName];
-            $stats = ChampionStats::from_api($champion_detail['stats']);
+            $stats = ChampionStats::mapping($champion_detail['stats']);
             $champion_db = Champion::find($champion['key']);
 
             if (! $champion_db) {
-                $champion_db = new Champion();
-                $champion_db->id = $champion['key'];
-                $champion_db->champion_id = $champion['id'];
-                $champion_db->name = $championName;
-                $champion_db->title = $champion['title'];
-                $champion_db->img_url = $champion['image']['full'];
+                $champion_db = Champion::create([
+                    'id' => $champion['key'],
+                    'name' => $championName,
+                    'title' => $champion['title'],
+                    'img_url' => $champion['image']['full'],
+                    'stats' => $stats,
+                    'champion_id' => $champion['id'],
+                ]);
+            } else {
+                $champion_db->update([
+                    'name' => $championName,
+                    'title' => $champion['title'],
+                    'img_url' => $champion['image']['full'],
+                    'stats' => $stats,
+                    'champion_id' => $champion['id'],
+                ]);
             }
-            $champion_db->stats = $stats;
-            $champion_db->save();
         }
     }
 
@@ -115,7 +123,7 @@ class SyncLolController extends Controller
                 continue;
             }
             $itemDb = Item::find($itemId);
-            $stats = ItemStats::from_api($stats);
+            $stats = ItemStats::mapping($stats);
 
             if ($itemDb) {
                 $itemDb->update([
@@ -124,26 +132,27 @@ class SyncLolController extends Controller
                     'tags' => $item['tags'],
                     'gold' => $item['gold']['total'],
                     'stats' => $stats,
-                    'mythic_stats' => new ItemMythicStats(),
+                    'mythic_stats' => null,
                     'colloq' => $item['colloq'],
                     'img_url' => $item['image']['full'],
                 ]);
             } else {
-                Item::create([
+                $itemDb = Item::create([
                     'id' => $itemId,
                     'name' => $item['name'],
                     'description' => $item['description'],
                     'tags' => $item['tags'],
                     'gold' => $item['gold']['total'],
                     'stats' => $stats,
-                    'mythic_stats' => new ItemMythicStats(),
+                    'mythic_stats' => null,
                     'colloq' => $item['colloq'],
                     'img_url' => $item['image']['full'],
                 ]);
             }
         }
         // dd(array_unique($stats_keys));
-        $this->scrapLolFandom();
+        $this->getItemsTypeFromLolFandom();
+        $this->getStatsOfMythicItems();
     }
 
     private function syncModes()
@@ -223,7 +232,7 @@ class SyncLolController extends Controller
         return $result;
     }
 
-    public function scrapLolFandom()
+    public function getItemsTypeFromLolFandom()
     {
         $legendary = Http::withoutVerifying()->get('https://leagueoflegends.fandom.com/wiki/Template:Items/List')->body();
         $dom = HtmlDomParser::str_get_html($legendary);
@@ -267,7 +276,6 @@ class SyncLolController extends Controller
                 }
             }
         }
-        $this->getStatsOfMythicItems();
     }
 
     public function getStatsOfMythicItems()
@@ -280,7 +288,7 @@ class SyncLolController extends Controller
             $mythicStats = $this->findMythicStatsInHtml($item, $datas);
             $res = array_merge($res, array_keys($mythicStats));
             // $stats = $item->stats_description;
-            $item->mythic_stats = ItemMythicStats::from_api($mythicStats);
+            $item->mythic_stats = ItemMythicStats::mapping($mythicStats);
             $item->save();
         }
     }

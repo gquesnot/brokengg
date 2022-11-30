@@ -15,8 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $description
  * @property array $tags
  * @property int $gold
- * @property \App\Data\item\ItemStats|null $stats
- * @property \App\Data\item\ItemMythicStats|null $mythic_stats
+ * @property ItemStats $stats
+ * @property ItemMythicStats|null $mythic_stats
  * @property string $colloq
  * @property string $img_url
  * @property string|null $type
