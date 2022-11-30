@@ -27,7 +27,7 @@ enum TabEnum: string
 
     public function title(): string
     {
-        return match($this){
+        return match ($this) {
             self::MATCHES => 'Matches',
             self::CHAMPIONS => 'Champions',
             self::ENCOUNTERS => 'Encounters',
@@ -36,6 +36,4 @@ enum TabEnum: string
             self::MATCH_DETAIL => 'Match Detail',
         };
     }
-
-
 }

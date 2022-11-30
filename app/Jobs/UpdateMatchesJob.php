@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Exceptions\LolApiException;
 use App\Helpers\RiotApi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -14,8 +13,10 @@ use Illuminate\Support\Facades\Log;
 
 class UpdateMatchesJob implements ShouldQueue, ShouldBeUnique
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     public function timeout()
     {
@@ -27,23 +28,19 @@ class UpdateMatchesJob implements ShouldQueue, ShouldBeUnique
         return 1;
     }
 
-    public function backoff(){
+    public function backoff()
+    {
         return 30;
     }
 
     public function __construct()
     {
-
     }
-
 
     public function handle()
     {
         $riotApi = new RiotApi();
         $count = $riotApi->updateMatches();
-        Log::info($count . ' Matches updated');
-
+        Log::info($count.' Matches updated');
     }
-
-
 }

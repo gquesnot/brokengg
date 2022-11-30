@@ -4,7 +4,6 @@ namespace App\Traits;
 
 trait WireableData
 {
-
     public function toLivewire(): array
     {
         return $this->toArray();
@@ -19,8 +18,4 @@ trait WireableData
     {
         return self::withoutMagicalCreationFrom(json_decode($value, true));
     }
-
-
-
-
 }

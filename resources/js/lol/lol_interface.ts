@@ -1,6 +1,6 @@
-import ItemCategory from "./data/ItemCategory";
-import Item from "./classes/item";
-import Participant from "./classes/Participant";
+import ItemCategory from "./data/item_category";
+import Item from "./classes/item/item";
+import Participant from "./classes/participant/participant";
 import ItemsController from "./classes/items_controller";
 
 interface LolInterface  {

@@ -26,7 +26,7 @@
               m-0
               focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
                         aria-label="Default select example">
-                        <template x-for="(participant_option, idx) in lol.participants">
+                        <template x-for="(participant_option, idx) in lol.participants" :key="idx">
                             <option :selected="lol.participant_id === participant_option.id"  :value="participant_option.id" x-text="participant_option.name  + ' - '+ participant_option.champion.name"></option>
                         </template>
 

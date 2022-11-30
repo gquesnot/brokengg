@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use App\Casts\DataCast;
-use App\Data\ItemStats;
-use App\Data\ItemMythicStats;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Data\item\ItemMythicStats;
+use App\Data\item\ItemStats;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,11 +15,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $description
  * @property array $tags
  * @property int $gold
- * @property \App\Data\DataJsonCast|null|null $stats
- * @property \App\Data\DataJsonCast|null|null $mythic_stats
+ * @property \App\Data\item\ItemStats|null $stats
+ * @property \App\Data\item\ItemMythicStats|null $mythic_stats
  * @property string $colloq
  * @property string $img_url
  * @property string|null $type
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Item newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Item newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Item query()
@@ -42,6 +41,7 @@ class Item extends Model
     use HasFactory;
 
     public $timestamps = false;
+
     protected $fillable = ['name',
         'id',
         'description',

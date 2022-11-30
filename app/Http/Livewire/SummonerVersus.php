@@ -10,7 +10,6 @@ use App\Models\Summoner;
 use App\Traits\PaginateTrait;
 use App\Traits\QueryParamsTrait;
 use Livewire\Component;
-use Session;
 use Symfony\Component\Process\Process;
 
 class SummonerVersus extends Component
@@ -23,7 +22,9 @@ class SummonerVersus extends Component
     public $other;
 
     public $version;
+
     public string $versus_text = '';
+
     public array $versus_text_exploded = [];
 
     public $with = 'with';
@@ -35,13 +36,13 @@ class SummonerVersus extends Component
 
     public FiltersData $filters;
 
-    public function mount(Summoner $me, $version, FiltersData $filters, ?Summoner $other =null)
+    public function mount(Summoner $me, $version, FiltersData $filters, ?Summoner $other = null)
     {
         $this->fill([
-            "me" => $me,
-            "other" => $other,
-            "version" => $version,
-            "filters" => $filters,
+            'me' => $me,
+            'other' => $other,
+            'version' => $version,
+            'filters' => $filters,
         ]);
     }
 
@@ -51,19 +52,18 @@ class SummonerVersus extends Component
         if (count($details) == 0) {
             return $result;
         }
-        $result[] = 'KDA: ' . $me_stat->kda . ' vs ' . $other_stat->kda;
-        $result[] = 'Winrate: ' . $me_stat->win_percent . '% vs ' . $other_stat->win_percent . '%';
-        $result[] = 'Kill participation: ' . $me_stat->kill_participation . '% vs ' . $other_stat->kill_participation . '%';
-        $result[] = 'Avg Score: ' . "{$me_stat->avg_kills}/{$me_stat->avg_deaths}/{$me_stat->avg_assists}" . ' vs ' . "{$other_stat->avg_kills}/{$other_stat->avg_deaths}/{$other_stat->avg_assists}";
-        $result[] = 'Avg kda: ' . $me_stat->kda . ' vs ' . $other_stat->kda;
-        $result[] = 'Games played: ' . $me_stat->game_played;
+        $result[] = 'KDA: '.$me_stat->kda.' vs '.$other_stat->kda;
+        $result[] = 'Winrate: '.$me_stat->win_percent.'% vs '.$other_stat->win_percent.'%';
+        $result[] = 'Kill participation: '.$me_stat->kill_participation.'% vs '.$other_stat->kill_participation.'%';
+        $result[] = 'Avg Score: '."{$me_stat->avg_kills}/{$me_stat->avg_deaths}/{$me_stat->avg_assists}".' vs '."{$other_stat->avg_kills}/{$other_stat->avg_deaths}/{$other_stat->avg_assists}";
+        $result[] = 'Avg kda: '.$me_stat->kda.' vs '.$other_stat->kda;
+        $result[] = 'Games played: '.$me_stat->game_played;
         foreach ($details as $detail) {
-            $result[] = $detail->since_match_end . ' ' . $detail->me->champion->name . ' ' . $detail->me->kda . ' vs ' . $detail->other->kda . ' ' . $detail->other->champion->name;
+            $result[] = $detail->since_match_end.' '.$detail->me->champion->name.' '.$detail->me->kda.' vs '.$detail->other->kda.' '.$detail->other->champion->name;
         }
+
         return $result;
-
     }
-
 
     public function setVersusText($allDetails, $stats)
     {
@@ -72,15 +72,15 @@ class SummonerVersus extends Component
         $with_details = $this->filterDetails($allDetails, 'with');
         $with_stats_me = new Stats($with_details->pluck('me'));
         $with_stats_other = new Stats($with_details->pluck('other'));
-        $versus_text[] = $this->me->name . ' with ' . $this->other->name;
+        $versus_text[] = $this->me->name.' with '.$this->other->name;
         $versus_text = array_merge($versus_text, $this->getVersusWithOrVs($with_details, $with_stats_me, $with_stats_other));
         $versus_text[] = ' ';
         $vs_details = $this->filterDetails($allDetails, 'vs');
         $vs_stats_me = new Stats($vs_details->pluck('me'));
         $vs_stats_other = new Stats($vs_details->pluck('other'));
-        $versus_text[] = $this->me->name . ' vs ' . $this->other->name;
+        $versus_text[] = $this->me->name.' vs '.$this->other->name;
         $versus_text = array_merge($versus_text, $this->getVersusWithOrVs($vs_details, $vs_stats_me, $vs_stats_other));
-        # merge versus text to create array of 200 chars line length
+        // merge versus text to create array of 200 chars line length
         $result = [];
         $count = 0;
         $tmp = [];
@@ -98,7 +98,6 @@ class SummonerVersus extends Component
         $this->versus_text = implode("\n\n", $result);
     }
 
-
     public function filterDetails($details, $with = 'with')
     {
         return $details->filter(function ($detail) use ($with) {
@@ -111,28 +110,24 @@ class SummonerVersus extends Component
         return new Process($args);
     }
 
-
-    public function sendOtherMessage(){
+    public function sendOtherMessage()
+    {
         $client = new RiotClientApi();
-        if (!$client->is_ok) {
+        if (! $client->is_ok) {
             return;
         }
 
-        foreach ($this->versus_text_exploded as $text){
+        foreach ($this->versus_text_exploded as $text) {
             $client->post_other_conversation($this->other->name, $text);
         }
-
     }
-
-
-
-
 
     public function sendChampSelectMessage()
     {
         $client = new RiotClientApi();
-        if (!$client->is_ok) {
-            $this->emitTo(BaseSummoner::class,'flashMessage',FLashEnum::ERROR->value, 'Error connecting to Riot Client API');
+        if (! $client->is_ok) {
+            $this->emitTo(BaseSummoner::class, 'flashMessage', FLashEnum::ERROR->value, 'Error connecting to Riot Client API');
+
             return;
         }
         $conversations = collect($client->get_conversations()->json());
@@ -141,16 +136,13 @@ class SummonerVersus extends Component
             return $conversation['type'] == 'championSelect' || $conversation['type'] == 'customGame';
         })->first();
         if ($champSelectComp != null) {
-            foreach ($this->versus_text_exploded as $text){
+            foreach ($this->versus_text_exploded as $text) {
                 $response = $client->post_champ_select_conversation($champSelectComp['id'], $text);
             }
+        } else {
+            $this->emitTo(BaseSummoner::class, 'flashMessage', FLashEnum::ERROR->value, 'No champ select conversation found');
         }
-        else{
-            $this->emitTo(BaseSummoner::class,'flashMessage',  FLashEnum::ERROR->value,  'No champ select conversation found');
-        }
-
     }
-
 
     public function render()
     {
@@ -166,7 +158,8 @@ class SummonerVersus extends Component
 
         $this->setVersusText($allDetails, $stats);
 
-        return view('livewire.summoner-versus',
+        return view(
+            'livewire.summoner-versus',
             [
                 'details' => $this->paginate($details),
                 'stats' => $stats,

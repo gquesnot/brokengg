@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $item_id
  * @property int $summoner_match_id
  * @property int $position
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch query()

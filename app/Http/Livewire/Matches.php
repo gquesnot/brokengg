@@ -25,9 +25,9 @@ class Matches extends Component
     public function mount(Summoner $me, $version, FiltersData $filters)
     {
         $this->fill([
-            "me" => $me,
-            "version" => $version,
-            "filters" => $filters,
+            'me' => $me,
+            'version' => $version,
+            'filters' => $filters,
         ]);
     }
 

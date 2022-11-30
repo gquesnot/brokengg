@@ -19,6 +19,7 @@
         "predis/predis": "^2.0",
         "simivar/riot-php": "^1.0",
         "spatie/laravel-data": "^2.0",
+        "spatie/laravel-typescript-transformer": "^2.1",
         "surgiie/transformer": "^0.2.0",
         "symfony/http-client": "^6.1",
         "symfony/process": "^6.1",

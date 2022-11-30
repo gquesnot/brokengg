@@ -1,4 +1,4 @@
-import ShopEvent from "./shop_event";
+import ShopEvent from "./participant/frame/shop_event";
 export default class ItemsController {
     constructor(items) {
         this.items = [];

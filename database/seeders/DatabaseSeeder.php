@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Http\Controllers\SyncLolController;
-use App\Jobs\UpdateRiotKeysJob;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -21,7 +20,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
         ]);
         $slc = new SyncLolController();
-        echo "Syncing...<br>";
+        echo 'Syncing...<br>';
         $slc->index();
     }
 }

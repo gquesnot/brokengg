@@ -1,4 +1,4 @@
-import { round } from "../util/util";
+import { round } from "../../util/util";
 export default class Stats {
     constructor() {
         this.ad = 0;

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $name
  * @property string $description
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Map newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Map newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Map query()
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 class Map extends Model
 {
     use HasFactory;
+
     public $timestamps = false;
 
     protected $fillable = [

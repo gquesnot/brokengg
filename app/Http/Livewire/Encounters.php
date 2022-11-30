@@ -25,9 +25,9 @@ class Encounters extends Component
     public function mount(Summoner $me, $version, FiltersData $filters)
     {
         $this->fill([
-            "me" => $me,
-            "version" => $version,
-            "filters" => $filters,
+            'me' => $me,
+            'version' => $version,
+            'filters' => $filters,
         ]);
     }
 
@@ -35,12 +35,11 @@ class Encounters extends Component
     {
         $encountersMatchIds = $this->me->getCachedMatchesQuery($this->filters);
         $encounters = $this->me->getCachedEncounters($encountersMatchIds, $this->filters);
-        if ($this->search){
+        if ($this->search) {
             $summonerIds = Summoner::where('name', 'like', '%'.$this->search.'%')->pluck('id');
-            $encounters = $encounters->filter(function ($total, $key) use($summonerIds){
+            $encounters = $encounters->filter(function ($total, $key) use ($summonerIds) {
                 return $summonerIds->contains($key);
             });
-
         }
         $encounters = $encounters->sortBy(fn ($summoner) => $summoner, SORT_REGULAR, true);
         $encountersPaginate = $encounters->forPage($this->page, $this->perPage);

@@ -8,7 +8,6 @@ use App\Models\Mode;
 use App\Models\Queue;
 use App\Models\Summoner;
 use App\Models\Summoner as SummonerModel;
-
 use App\Traits\PaginateTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -39,16 +38,16 @@ class LiveGame extends Component
     public function mount(Summoner $me, $version)
     {
         $this->fill([
-            "me" => $me,
-            "version" => $version,
+            'me' => $me,
+            'version' => $version,
         ]);
         $this->getLiveGame();
     }
 
     public function getLiveGame()
     {
-        $riotApi  = new \App\Helpers\RiotApi();
-        # TODO MAKE AGAIN
+        $riotApi = new \App\Helpers\RiotApi();
+        // TODO MAKE AGAIN
         $data = $riotApi->getSummonerLiveGame($this->me);
         $this->loaded = $data != null;
         if (! $this->loaded) {
@@ -89,7 +88,6 @@ class LiveGame extends Component
 
     public function searchSummoners()
     {
-
         if ($this->search == null || $this->search == '') {
             $this->lobbyParticipants = null;
 
@@ -104,10 +102,10 @@ class LiveGame extends Component
             }
 
             $summoner = SummonerModel::where('name', $name)->first();
-            if (!$summoner){
+            if (! $summoner) {
                 $summoner = $riotApi->getAndUpdateSummonerByName($name);
             }
-            if (!$summoner){
+            if (! $summoner) {
                 return null;
             }
 

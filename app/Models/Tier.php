@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $name
  * @property int $position
  * @property string|null $img_url
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Tier newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Tier newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Tier query()
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
 class Tier extends Model
 {
     use HasFactory;
+
     public $timestamps = false;
 
     protected $fillable = [

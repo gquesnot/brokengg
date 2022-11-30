@@ -6,7 +6,6 @@ use App\Data\FiltersData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -28,6 +27,7 @@ use Illuminate\Support\Facades\DB;
  * @property int $auto_update
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
+ *
  * @method static Builder|Summoner newModelQuery()
  * @method static Builder|Summoner newQuery()
  * @method static Builder|Summoner query()
@@ -62,11 +62,10 @@ class Summoner extends Model
     ];
 
     protected $casts = [
-        'complete' => 'boolean'
+        'complete' => 'boolean',
     ];
 
-
-    public function getCachedMatchesQuery(?FiltersData $filters=null)
+    public function getCachedMatchesQuery(?FiltersData $filters = null)
     {
         $count = $this->getMatchesQuery($filters)->count();
 
@@ -91,18 +90,19 @@ class Summoner extends Model
         return $query;
     }
 
-    public function getCacheKey($cacheName, ?FiltersData $filters ,$count, )
+    public function getCacheKey($cacheName, ?FiltersData $filters, $count)
     {
         $result = "{$cacheName}_{$count}";
-        if ($filters){
-            foreach($filters->toArray() as $key => $value){
+        if ($filters) {
+            foreach ($filters->toArray() as $key => $value) {
                 $result .= "_{$key}_{$value}";
             }
         }
-        return $result . "_{$this->id}";
+
+        return $result."_{$this->id}";
     }
 
-    public function getCachedEncounters($matchIds,?FiltersData $filters=null)
+    public function getCachedEncounters($matchIds, ?FiltersData $filters = null)
     {
         return Cache::remember($this->getCacheKey('encounters', $filters, $matchIds->count()), 60 * 5, function () use ($matchIds) {
             return $this->encounters($matchIds)->pluck('total', 'summoner_id');

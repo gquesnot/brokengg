@@ -1,26 +1,25 @@
 <?php
 
-namespace App\Data;
+namespace App\Data\item;
 
-use App\Traits\CastableJsonData;
-use App\Traits\WireableData;
+use App\Data\DataJsonCast;
 use Illuminate\Support\Arr;
 use Livewire\Wireable;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
+#[TypeScript]
 class ItemMythicStats extends DataJsonCast implements Wireable
 {
-
     public function __construct(
-        public int   $hp = 0,
-        public int   $ah = 0,
-        public int   $ms = 0,
-
-        public int   $ap = 0,
-        public int   $ad = 0,
-        public int   $armor = 0,
-        public int   $mr = 0,
-        public int   $armor_pen_flat = 0,
-        public int   $magic_pen_flat = 0,
+        public int $hp = 0,
+        public int $ah = 0,
+        public int $ms = 0,
+        public int $ap = 0,
+        public int $ad = 0,
+        public int $armor = 0,
+        public int $mr = 0,
+        public int $armor_pen_flat = 0,
+        public int $magic_pen_flat = 0,
         public float $hp_percent = 0,
         public float $armor_pen_percent = 0,
         public float $magic_pen_percent = 0,
@@ -28,11 +27,8 @@ class ItemMythicStats extends DataJsonCast implements Wireable
         public float $omnivamp_percent = 0,
         public float $heal_power_percent = 0,
         public float $as_percent = 0,
-
-    )
-    {
+    ) {
     }
-
 
     public static function from_api($datas): ItemMythicStats
     {
@@ -54,6 +50,7 @@ class ItemMythicStats extends DataJsonCast implements Wireable
         $stats->armor_pen_flat = Arr::get($datas, 'lethality', 0);
         $stats->magic_pen_percent = Arr::get($datas, 'magic_penetration_percent', 0);
         $stats->magic_pen_flat = Arr::get($datas, 'magic_penetration', 0);
+
         return $stats;
     }
 }

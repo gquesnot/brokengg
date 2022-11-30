@@ -6,14 +6,11 @@ use App\Data\DataJsonCast;
 
 class CastableJsonData
 {
-
     public function __construct(
         /** @var class-string<DataJsonCast> $dataClass */
         protected string $dataClass
     ) {
     }
-
-
 
     public function get($model, $key, $value, $attributes): ?DataJsonCast
     {
@@ -25,7 +22,6 @@ class CastableJsonData
 
         return ($this->dataClass)::withoutMagicalCreationFrom($payload);
     }
-
 
     public function set($model, $key, $value, $attributes): ?string
     {
@@ -40,6 +36,7 @@ class CastableJsonData
         if (count($transformed) === 0) {
             return null;
         }
+
         return json_encode($transformed);
     }
 }

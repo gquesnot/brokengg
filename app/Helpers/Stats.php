@@ -9,7 +9,9 @@ class Stats
     public float $kda = 0;
 
     public float $avg_kills = 0;
+
     public float $avg_deaths = 0;
+
     public float $avg_assists = 0;
 
     public int $game_won = 0;
@@ -22,10 +24,9 @@ class Stats
 
     public function __construct(
         $matches,
-    )
-    {
+    ) {
         $this->game_played = $matches->count();
-        if ($this->game_played){
+        if ($this->game_played) {
             $this->game_won = $matches->where('won', true)->count();
             $this->game_lose = $matches->where('won', false)->count();
             $this->kill_participation = round($matches->avg('kill_participation') * 100);
@@ -35,8 +36,5 @@ class Stats
             $this->kda = round(($this->avg_kills + $this->avg_assists) / $this->avg_deaths, 1);
             $this->win_percent = $this->game_played > 0 ? round($this->game_won / $this->game_played * 100, 1) : 0;
         }
-
-
     }
-
 }

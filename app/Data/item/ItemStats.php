@@ -1,26 +1,27 @@
 <?php
 
-namespace App\Data;
+namespace App\Data\item;
 
+use App\Data\DataJsonCast;
 use Illuminate\Support\Arr;
 use Livewire\Wireable;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
+#[TypeScript]
 class ItemStats extends DataJsonCast implements Wireable
 {
-
-
     public function __construct(
-        public int   $hp = 0,
-        public int   $ap = 0,
-        public int   $ad = 0,
-        public int   $armor = 0,
-        public int   $mr = 0,
-        public int   $ms = 0,
-        public int   $ms_percent = 0,
-        public int   $mp = 0,
-        public int   $ah = 0,
-        public int   $flat_magic_pen = 0,
-        public int   $flat_armor_pen = 0,
+        public int $hp = 0,
+        public int $ap = 0,
+        public int $ad = 0,
+        public int $armor = 0,
+        public int $mr = 0,
+        public int $ms = 0,
+        public int $ms_percent = 0,
+        public int $mp = 0,
+        public int $ah = 0,
+        public int $flat_magic_pen = 0,
+        public int $flat_armor_pen = 0,
         public float $crit_percent = 0,
         public float $as_percent = 0,
         public float $hp_regen_percent = 0,
@@ -31,39 +32,12 @@ class ItemStats extends DataJsonCast implements Wireable
         public float $armor_pen_percent = 0,
         public float $heal_power_percent = 0,
         public float $tenacity_percent = 0,
-
-    )
-    {
-
+    ) {
     }
 
     public static function from_api($datas): ItemStats
     {
         $result = new self();
-
-        //   "move speed"
-        //   "health"
-        //   "critical strike chance percent"
-        //   "ability power"
-        //   "mana"
-        //   "armor"
-        //   "magic resist"
-        //   "attack damage"
-        //   "attack speed percent"
-        //   "life steal percent"
-        //   "ability haste"
-        //   "base mana regen percent"
-        //   "magic penetration"
-        //   "move speed percent"
-        //   "armor penetration percent"
-        //   "base health regen percent"
-        //   "omnivamp percent"
-        //   "heal and shield power percent"
-        //   "tenacity percent"
-        //   "magic penetration percent"
-        //   "lethality"
-        //   "gold per 10 seconds"
-
         $result->ms = Arr::get($datas, 'move speed', 0);
         $result->hp = Arr::get($datas, 'health', 0);
         $result->crit_percent = Arr::get($datas, 'critical strike chance percent', 0);
@@ -86,8 +60,7 @@ class ItemStats extends DataJsonCast implements Wireable
         $result->magic_pen_percent = Arr::get($datas, 'magic penetration percent', 0);
         $result->flat_armor_pen = Arr::get($datas, 'lethality', 0);
         $result->toJson();
+
         return $result;
-
     }
-
 }

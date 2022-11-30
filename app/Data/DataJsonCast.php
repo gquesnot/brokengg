@@ -11,9 +11,8 @@ class DataJsonCast extends Data implements Castable
 {
     use WireableData;
 
-
-   public function toArray(bool $get_all = false): array
-   {
+    public function toArray(bool $get_all = false): array
+    {
 //         $array = parent::toArray();
 //         if (!$get_all) {
 //              foreach ($array as $key => $value) {
@@ -22,13 +21,11 @@ class DataJsonCast extends Data implements Castable
 //                }
 //              }
 //         }
-         return parent::toArray();
+        return parent::toArray();
     }
 
-    public static function castUsing(array $arguments)
-    {
-        return new CastableJsonData(static::class);
-    }
-
-
+     public static function castUsing(array $arguments)
+     {
+         return new CastableJsonData(static::class);
+     }
 }

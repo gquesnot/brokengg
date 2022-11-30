@@ -14,8 +14,6 @@ trait CastableJsonData
     ) {
     }
 
-
-
     public function get($model, $key, $value, $attributes): ?DataJsonCast
     {
         if ($value === null) {
@@ -27,12 +25,12 @@ trait CastableJsonData
         return ($this->dataClass)::from($payload);
     }
 
-
     public function set($model, $key, $value, $attributes): ?string
     {
         if ($value === null) {
             return null;
         }
+
         return $value->toJson();
     }
 }

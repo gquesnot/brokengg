@@ -1,3 +1,5 @@
+import Item from "../classes/item/item";
+
 export function round(value:number, decimal = 0) {
     return decimal === 0 ? Math.round(value) : Math.round(value * 10 * decimal) / (10 * decimal);
 }
@@ -29,4 +31,49 @@ export function is_witsend(item_id: number) {
 
 export function is_nashor(item_id: number) {
     return item_id === 3115;
+}
+
+
+export function has_guinsoo(items:Item[]): boolean {
+    return items.some((item) => {
+        return is_guinsoo(item.id);
+    });
+}
+
+export function has_ie(items:Item[], crit_percent: number  = -1): boolean {
+    return items.some((item) => {
+        if (crit_percent === -1) {
+            return is_ie(item.id);
+        }
+        return is_ie(item.id) && crit_percent > 0.6;
+    })
+}
+
+export function has_brk(items:Item[]): boolean {
+    return items.some((item) => {
+        return is_brk(item.id);
+    });
+}
+
+export function has_dominik(items:Item[]): boolean {
+    return items.some((item) => {
+        return is_dominik(item.id);
+    });
+}
+
+export function has_nashor(items:Item[]): boolean{
+    return items.some((item) => {
+        return is_nashor(item.id)
+    });
+}
+export function has_witsend(items:Item[]): boolean{
+    return items.some((item) => {
+        return is_witsend(item.id)
+    });
+}
+
+export function has_rageknife(items:Item[]): boolean{
+    return items.some((item) => {
+        return is_rageknife(item.id)
+    });
 }

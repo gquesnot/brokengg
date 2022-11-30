@@ -9,12 +9,14 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class AutoUpdateJob implements ShouldQueue, ShouldBeUnique
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     public function __construct()
     {
@@ -24,7 +26,7 @@ class AutoUpdateJob implements ShouldQueue, ShouldBeUnique
     {
         $results = collect([]);
         $riotApi = new \App\Helpers\RiotApi();
-        $summoners = SummonerModel::whereAutoUpdate(True)->get();
+        $summoners = SummonerModel::whereAutoUpdate(true)->get();
         foreach ($summoners as $summoner) {
             $results = $results->merge($riotApi->updateSummonerMatches($summoner));
         }
@@ -32,8 +34,8 @@ class AutoUpdateJob implements ShouldQueue, ShouldBeUnique
         Log::info($results->count().' Matches added');
     }
 
-    public function uniqueId(){
+    public function uniqueId()
+    {
         return 2;
     }
-
 }

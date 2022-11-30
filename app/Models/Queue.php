@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $map
  * @property string $description
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Queue newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Queue newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Queue query()
@@ -21,8 +22,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Queue extends Model
 {
-    public $timestamps = false;
     use HasFactory;
+
+    public $timestamps = false;
 
     protected $fillable = ['id', 'map',
         'description', ];

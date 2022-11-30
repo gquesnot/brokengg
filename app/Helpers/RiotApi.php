@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Data\match_timeline\ParticipantData;
 use App\Models\Champion;
 use App\Models\ItemSummonerMatch;
 use App\Models\Map;
@@ -13,7 +14,6 @@ use App\Models\SummonerMatch;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -21,17 +21,17 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class  RiotApi
+class RiotApi
 {
     protected Client $client;
 
     public ?Collection $modes = null;
+
     public ?Collection $maps = null;
+
     public ?Collection $queues = null;
 
-
     public string $api_key;
-
 
     public function __construct()
     {
@@ -42,8 +42,6 @@ class  RiotApi
         $this->queues = Queue::pluck('id');
     }
 
-
-
 //    public function getSummonerNameByPuuid(string $puuid): ?string
 //    {
 //        $summoner = SummonerApi::wherePuuid($puuid)->whereAccountId($this->getAccount()->id)->with(\App\Enums\TabEnum::MATCHES->value)->first()?->summoner;
@@ -53,11 +51,10 @@ class  RiotApi
 //        return $summoner->name;
 //    }
 
-
     public function createOrGetTmpSummoner($data): Summoner
     {
         $summoner = Summoner::wherePuuid($data->puuid)->first();
-        if (!$summoner) {
+        if (! $summoner) {
             $summoner = Summoner::firstOrCreate([
                 'name' => $data->summonerName,
                 'summoner_level' => intval($data->summonerLevel),
@@ -68,6 +65,7 @@ class  RiotApi
 
             ]);
         }
+
         return $summoner;
     }
 
@@ -77,21 +75,21 @@ class  RiotApi
         if ($result == null && $count < 5) {
             $result = $this->retryFn($callback, $count + 1);
         }
+
         return $result;
     }
-
 
     public function getAndUpdateSummonerByName(string $summonerName): ?Summoner
     {
         $summoner = Summoner::where('name', $summonerName)->first();
-        if ($summoner == null || !$summoner->complete) {
-
-            $summonerData = $this->retryFn(fn() => $this->getSummonerByName($summonerName));
+        if ($summoner == null || ! $summoner->complete) {
+            $summonerData = $this->retryFn(fn () => $this->getSummonerByName($summonerName));
             if ($summonerData == null) {
                 return null;
             }
             $summoner = $this->updateSummoner($summoner, $summonerData);
         }
+
         return $summoner;
     }
 
@@ -103,7 +101,7 @@ class  RiotApi
         $matchDbIds = Matche::whereIn('match_id', $matchIds)->pluck('match_id');
         $resultMatchIds = $matchIds->diff($matchDbIds);
         if ($resultMatchIds->isNotEmpty()) {
-            Matche::insert($resultMatchIds->map(fn($id) => ['match_id' => $id])->toArray());
+            Matche::insert($resultMatchIds->map(fn ($id) => ['match_id' => $id])->toArray());
         }
 
         return $resultMatchIds;
@@ -118,10 +116,9 @@ class  RiotApi
         if ($startDate == null) {
             $startDate = Carbon::createFromFormat('d/m/Y', config('lol.min_match_date'))->timestamp;
         }
-        $lastScannedMatch = Str::of($summoner->last_scanned_match)->replaceFirst('EUW1_', '',)->toInteger();
+        $lastScannedMatch = Str::of($summoner->last_scanned_match)->replaceFirst('EUW1_', '')->toInteger();
         while (true) {
-
-            $data = $this->retryFn(fn() => $this->getMatchIds($summoner, $queuId, $startDate, $limit, $offset));
+            $data = $this->retryFn(fn () => $this->getMatchIds($summoner, $queuId, $startDate, $limit, $offset));
             if ($data == null) {
                 break;
             }
@@ -137,8 +134,9 @@ class  RiotApi
         }
 
         if ($lastScannedMatch) {
-            $res = $res->filter(fn($id) => Str::of($id)->replaceFirst('EUW1_', '',)->toInteger() > $lastScannedMatch);
+            $res = $res->filter(fn ($id) => Str::of($id)->replaceFirst('EUW1_', '')->toInteger() > $lastScannedMatch);
         }
+
         return $res;
     }
 
@@ -146,11 +144,12 @@ class  RiotApi
     {
         //only process if it's an object or array being passed to the function
         if (is_object($obj) || is_array($obj)) {
-            $ret = (array)$obj;
+            $ret = (array) $obj;
             foreach ($ret as &$item) {
                 //recursively process EACH element regardless of type
                 $item = self::object_to_array($item);
             }
+
             return $ret;
         } //otherwise (i.e. for scalar values) return without modification
         else {
@@ -160,113 +159,47 @@ class  RiotApi
 
     public function getCachedMatchTimeline(Matche $match)
     {
-
         return Cache::remember("match_timeline_{$match->match_id}", 60 * 60 * 24, function () use ($match) {
             return $this->getMatchTimeline($match);
         });
     }
 
-    public function parseParticipantStats($participant): array{
-        return [
-        "ah" => $participant["abilityHaste"],
-        "ap" => $participant["abilityPower"],
-        "armor" => $participant["armor"],
-        "armor_pen_flat" => $participant["armorPen"],
-        "armor_pen_percent" => $participant["armorPenPercent"],
-        "ad" => $participant["attackDamage"],
-        "as" => $participant["attackSpeed"],
-        "armor_pen_percent_bonus" => $participant["bonusArmorPenPercent"],
-        "magic_pen_percent_bonus" => $participant["bonusMagicPenPercent"],
-        "tenacity" => $participant["ccReduction"],
-        "cdr" => $participant["cooldownReduction"],
-        "hp" => $participant["healthMax"],
-        "hp_regen" => $participant["healthRegen"],
-        "lifesteal_percent" => $participant["lifesteal"],
-        "magi_pen_flat" => $participant["magicPen"],
-        "magic_pen_percent" => $participant["magicPenPercent"],
-        "mr" => $participant["magicResist"],
-        "ms" => $participant["movementSpeed"],
-        "omnivamp_percent" => $participant["omnivamp"],
-        "physical_vamp" => $participant["physicalVamp"],
-        "mana" => $participant["powerMax"],
-        "mana_regen" => $participant["powerRegen"],
-        "spell_vamp_percent" => $participant["spellVamp"],
-        ];
-    }
-
-
-    public function getMatchTimeline(Matche $match)
+    public function getMatchTimeline(Matche $match): Collection
     {
         $url = "https://europe.api.riotgames.com/lol/match/v5/matches/{$match->match_id}/timeline";
         $match_timeline = self::object_to_array($this->doGetWithRetry($url)->info);
-        $match->load('participants:id,champion_id,summoner_id,won,match_id','participants.champion:id,name,champion_id,stats,img_url', 'participants.items:id', 'participants.summoner:id,profile_icon_id,name,puuid');
-        $participants = $match->participants->map(function (SummonerMatch $participant, int $index) use ($match_timeline) {
-            $new_participant = [];
-            $new_participant['items'] = $participant->items->pluck('id');
-            $new_participant['id'] = $index + 1;
-            $new_participant['champion'] = $participant->champion->toArray();
-            $new_participant['frames'] = collect($match_timeline['frames'])->map(function ($frame) use ($new_participant) {
-                $participant = collect($frame['participantFrames'])->filter(function ($patricipant_frame)  use ($new_participant) {
-                    return $patricipant_frame['participantId'] == $new_participant['id'];
-                })->first();
-                $events = collect($frame['events'])->filter(function ($event) use ($new_participant) {
-                    return Str::contains($event['type'], 'ITEM') && $event['participantId'] == $new_participant['id'];
-                })->map(function ($event) {
-                    return [
-                        "type" => $event['type'],
-                        "timestamp" => $event['timestamp'],
-                        "item_id" => Arr::get($event,'itemId', null),
-                        "participant_id" => $event['participantId'],
-                        "after_id" => Arr::get($event, 'afterId', null),
-                        "before_id" => Arr::get($event, 'beforeId', null),
-                        "gold_gain" => Arr::get($event, 'goldGain', null),
-                    ];
-                })->values()->toArray();
-                return [
-                    "events" => $events,
-                    'current_gold' => $participant['currentGold'],
-                    'total_gold' => $participant['totalGold'],
-                    'level' => $participant['level'],
-                    'stats' => $this->parseParticipantStats($participant['championStats']),
-                ];
-            });
-            $new_participant['name'] = $participant->summoner->name;
-            $new_participant['puuid'] = $participant->summoner->puuid;
-            $new_participant['profile_icon_id'] = $participant->summoner->profile_icon_id;
-            $new_participant['won'] = $participant->won;
-            return $new_participant;
-        });
-        return $participants;
-    }
+        $match->load('participants:id,champion_id,summoner_id,won,match_id', 'participants.champion:id,name,champion_id,stats,img_url', 'participants.items:id', 'participants.summoner:id,profile_icon_id,name,puuid');
 
+        return $match->participants->map(function (SummonerMatch $participant, int $index) use ($match_timeline) {
+            return ParticipantData::from_api($participant, $index + 1, $match_timeline);
+        });
+    }
 
     public function updateMatches(): int
     {
         $matches = Matche::whereUpdated(false)->get();
         $matchDone = 0;
         foreach ($matches as $match) {
-
             $ok = $this->updateMatch($match);
 
-
-            if (!$ok) {
+            if (! $ok) {
                 Matche::where('id', $match->id)->delete();
             }
             $matchDone++;
         }
 
-        #$this->clearMatches();
+        //$this->clearMatches();
         return $matchDone;
     }
 
-
     public function updateMatch(Matche $match): bool
     {
-        $data = $this->retryFn(fn() => $this->getMatchDetail($match->match_id));
+        $data = $this->retryFn(fn () => $this->getMatchDetail($match->match_id));
         $info = $data->info;
-        if ($info->gameMode == "" || $info->mapId == 0 || $info->queueId == 0) {
-            # custom game
+        if ($info->gameMode == '' || $info->mapId == 0 || $info->queueId == 0) {
+            // custom game
             Log::info("Dosent update match {$match->match_id} because it is a custom game");
+
             return false;
         }
         $mode = $this->modes->where('name', '=', $info->gameMode)->first();
@@ -330,7 +263,7 @@ class  RiotApi
             $sm = SummonerMatch::create($summonerMatchParams);
             $items = [];
             for ($i = 0; $i < 6; $i++) {
-                $item = $participant->{'item' . $i};
+                $item = $participant->{'item'.$i};
                 $items[] = [
                     'summoner_match_id' => $sm->id,
                     'item_id' => $item,
@@ -351,7 +284,6 @@ class  RiotApi
         return true;
     }
 
-
     public function clearMatches()
     {
         $ids = collect(DB::select('select t.id
@@ -363,15 +295,14 @@ class  RiotApi
                 ) as t
                 where cnt > 1'))->map(function ($item) {
             //return $item->id as string;
-            return (string)$item->id;
+            return (string) $item->id;
         });
 
         if ($ids->isNotEmpty()) {
-            DB::delete('delete from summoner_matches where id in (' . implode(', ', $ids->toArray()) . ')');
+            DB::delete('delete from summoner_matches where id in ('.implode(', ', $ids->toArray()).')');
         }
-        Log::info('clear matches: ' . $ids->count());
+        Log::info('clear matches: '.$ids->count());
     }
-
 
     public function waitApiOk($retry_after): bool
     {
@@ -386,25 +317,23 @@ class  RiotApi
         return true;
     }
 
-
     public function doGetWithRetry($url, $params = [])
     {
         try {
             $all_params = [
-                "headers" => $this->getHeaders(),
-                "query" => $params,
+                'headers' => $this->getHeaders(),
+                'query' => $params,
             ];
             //$response = $this->client->request('GET', $url, $all_params);
             $json = json_decode(Http::withoutVerifying()->withHeaders($this->getHeaders())->get($url, $all_params));
             if ($json != null) {
                 return $json;
             } else {
-                echo 'error ' . PHP_EOL;
-                dd('error',);
+                echo 'error '.PHP_EOL;
+                dd('error');
             }
         } catch (GuzzleException $e) {
-            if (str_contains($e->getMessage(), "\"message\":\"Data not found\"")) {
-
+            if (str_contains($e->getMessage(), '"message":"Data not found"')) {
                 return null;
             }
             if (array_key_exists('Retry-After', $e->getResponse()->getHeaders())) {
@@ -412,6 +341,7 @@ class  RiotApi
                 $this->waitApiOk($retry_after);
             }
         }
+
         return null;
     }
 
@@ -433,6 +363,7 @@ class  RiotApi
     public function getSummonerByName(string $summonerName)
     {
         $summonerName = urlencode($summonerName);
+
         return $this->doGetWithRetry("https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerName}");
     }
 
@@ -440,7 +371,6 @@ class  RiotApi
     {
         return $this->doGetWithRetry("https://europe.api.riotgames.com/lol/match/v5/matches/$matchId");
     }
-
 
     public function getSummonerByPuuid(string $puuid)
     {
@@ -468,15 +398,13 @@ class  RiotApi
         ];
     }
 
-
     /**
-     * @param mixed $summoner
-     * @param mixed $summonerData
+     * @param  mixed  $summoner
+     * @param  mixed  $summonerData
      * @return Summoner
      */
     private function updateSummoner(?Summoner $summoner, mixed $summonerData): mixed
     {
-
         if ($summoner) {
             $summoner->name = $summonerData->name;
             $summoner->profile_icon_id = intval($summonerData->profileIconId);
@@ -499,7 +427,7 @@ class  RiotApi
                 'complete' => true,
             ]);
         }
+
         return $summoner;
     }
-
 }

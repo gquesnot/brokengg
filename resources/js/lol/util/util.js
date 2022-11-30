@@ -22,3 +22,41 @@ export function is_witsend(item_id) {
 export function is_nashor(item_id) {
     return item_id === 3115;
 }
+export function has_guinsoo(items) {
+    return items.some((item) => {
+        return is_guinsoo(item.id);
+    });
+}
+export function has_ie(items, crit_percent = -1) {
+    return items.some((item) => {
+        if (crit_percent === -1) {
+            return is_ie(item.id);
+        }
+        return is_ie(item.id) && crit_percent > 0.6;
+    });
+}
+export function has_brk(items) {
+    return items.some((item) => {
+        return is_brk(item.id);
+    });
+}
+export function has_dominik(items) {
+    return items.some((item) => {
+        return is_dominik(item.id);
+    });
+}
+export function has_nashor(items) {
+    return items.some((item) => {
+        return is_nashor(item.id);
+    });
+}
+export function has_witsend(items) {
+    return items.some((item) => {
+        return is_witsend(item.id);
+    });
+}
+export function has_rageknife(items) {
+    return items.some((item) => {
+        return is_rageknife(item.id);
+    });
+}

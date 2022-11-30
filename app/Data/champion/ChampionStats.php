@@ -1,38 +1,37 @@
 <?php
 
-namespace App\Data;
+namespace App\Data\champion;
 
+use App\Data\DataJsonCast;
 use Illuminate\Support\Arr;
 use Livewire\Wireable;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
-
+#[TypeScript]
 class ChampionStats extends DataJsonCast implements Wireable
 {
     public function __construct(
-        public int   $hp = 0,
-        public int   $hp_per_level = 0,
-        public int   $hp_regen = 0,
-        public int   $hp_regen_per_level = 0,
-        public int   $mp = 0,
-        public int   $mp_per_level = 0,
-        public int   $mp_regen = 0,
-        public int   $mp_regen_per_level = 0,
-        public int   $ms = 0,
-        public int   $armor = 0,
-        public int   $armor_per_level = 0,
-        public int   $mr = 0,
-        public int   $mr_per_level = 0,
-        public int   $attack_range = 0,
-        public int   $ad = 0,
-        public int   $ad_per_level = 0,
+        public int $hp = 0,
+        public int $hp_per_level = 0,
+        public int $hp_regen = 0,
+        public int $hp_regen_per_level = 0,
+        public int $mp = 0,
+        public int $mp_per_level = 0,
+        public int $mp_regen = 0,
+        public int $mp_regen_per_level = 0,
+        public int $ms = 0,
+        public int $armor = 0,
+        public int $armor_per_level = 0,
+        public int $mr = 0,
+        public int $mr_per_level = 0,
+        public int $attack_range = 0,
+        public int $ad = 0,
+        public int $ad_per_level = 0,
         public float $crit_percent = 0,
         public float $crit_percent_per_level = 0,
         public float $base_as = 0,
         public float $as_percent_per_level = 0,
-
-    )
-    {
-
+    ) {
     }
 
     public static function from_api($datas): ChampionStats
@@ -62,5 +61,4 @@ class ChampionStats extends DataJsonCast implements Wireable
 
         return $stats;
     }
-
 }

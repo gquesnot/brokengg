@@ -6,10 +6,12 @@ use Livewire\Component;
 
 class Select2 extends Component
 {
-
     public string $model;
+
     public array $options;
+
     public bool $nullable = false;
+
     public bool $multiple = false;
 
     public function mount(string $model, array $options, bool $nullable = false, bool $multiple = false)

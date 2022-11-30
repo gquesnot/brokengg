@@ -15,6 +15,7 @@ class Select2 extends Component
         public bool $optGroup = false,
     ) {
     }
+
     public function render()
     {
         return view('components.form.select2');

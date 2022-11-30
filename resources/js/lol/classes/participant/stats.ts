@@ -1,9 +1,9 @@
-import ItemStats from "./ItemStats";
-import ItemMythicStats from "./ItemMythicStats";
-import Item from "./item";
-import Champion from "./champion";
-import Frame from "./frame";
-import {round} from "../util/util";
+import ItemStats from "../item/ItemStats";
+import ItemMythicStats from "../item/ItemMythicStats";
+import Item from "../item/item";
+import {round} from "../../util/util";
+import {Frame} from "./frame/frame";
+import {Champion} from "../champion/champion";
 
 export default class Stats {
     ad: number = 0;

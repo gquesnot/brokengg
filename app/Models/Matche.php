@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use App\Data\FiltersData;
+use App\Data\match_timeline\ParticipantData;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 
 /**
  * App\Models\Matche
@@ -22,17 +22,20 @@ use Illuminate\Support\Arr;
  * @property string|null $match_duration
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Spatie\LaravelData\DataCollection|null $details
  * @property-read mixed $since_match_end
  * @property-read \App\Models\Map|null $map
  * @property-read \App\Models\Mode|null $mode
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $participants
  * @property-read int|null $participants_count
  * @property-read \App\Models\Queue|null $queue
+ *
  * @method static Builder|Matche filters(?\App\Data\FiltersData $filters)
  * @method static Builder|Matche newModelQuery()
  * @method static Builder|Matche newQuery()
  * @method static Builder|Matche query()
  * @method static Builder|Matche whereCreatedAt($value)
+ * @method static Builder|Matche whereDetails($value)
  * @method static Builder|Matche whereId($value)
  * @method static Builder|Matche whereMapId($value)
  * @method static Builder|Matche whereMatchCreation($value)
@@ -57,14 +60,20 @@ class Matche extends Model
         'map_id',
         'match_creation',
         'match_duration',
+        'details',
+    ];
+
+    public $casts = [
+        'details' => ParticipantData::class,
     ];
 
     public function getSinceMatchEndAttribute()
     {
-        # convert 00:00:00 to h m s
+        // convert 00:00:00 to h m s
         $match_duration = explode(':', $this->getRawOriginal('match_duration'));
-        $match_duration_m =  intval($match_duration[0]) * 60 + intval($match_duration[1]);
+        $match_duration_m = intval($match_duration[0]) * 60 + intval($match_duration[1]);
         $match_duration_s = intval($match_duration[2]);
+
         return Carbon::parse($this->match_creation)
             ->addMinutes($match_duration_m)
             ->addSeconds($match_duration_s)
@@ -98,7 +107,7 @@ class Matche extends Model
             if ($filters->date_end) {
                 $query->where('match_creation', '<=', $filters->date_end);
             }
-            if ($filters->queue){
+            if ($filters->queue) {
                 $query->where('queue_id', $filters->queue);
             }
         }

@@ -1,4 +1,4 @@
-import ItemCategory from "./ItemCategory";
+import ItemCategory from "./item_category";
 
  const items_categories: ItemCategory[] = [
     {

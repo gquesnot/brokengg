@@ -1,8 +1,9 @@
 <div>
+
     <div class="flex pb-4">
 
         <div class="flex pr-3">
-            <template x-for="(item, idx) in lol.items">
+            <template x-for="(item, idx) in lol.items" :key="idx">
                 <div class="h-16">
                     <div style="max-width: 60.6167px" class="m-2"
 
@@ -77,7 +78,7 @@
 
                             <div class="mr-3 items-center self-center w-1/4"> My Item List</div>
                             <div class="flex pr-3 w-1/2 ">
-                                <template x-for="(item, idx) in  lol.items" >
+                                <template x-for="(item, idx) in lol.items" :key="idx">
                                     <x-shop-item-self/>
                                 </template>
 
@@ -95,10 +96,10 @@
                         <div class="w-full flex">
                             <div class="bg-white shadow overflow-hidden rounded-md w-1/4 mr-6 h-full">
                                 <ul role="list" class="divide-y divide-gray-200">
-                                    <template x-for="(item_category, idx) in lol.items_categories">
+                                    <template x-for="(item_category, idx) in lol.items_categories" :key="idx">
                                         <li class="relative">
-                                            <button @click="lol.select_category(idx)"
-                                                    :class="lol.category == idx ? 'btn text-white w-full focus:border-none bg-indigo-700': 'btn-white w-full'"
+                                            <button @click="select_category(idx)"
+                                                    :class="lol.category_id == idx ? 'btn text-white w-full focus:border-none bg-indigo-700': 'btn-white w-full'"
                                                     style="height:2rem"
                                             ><span x-html="item_category.name"></span>
                                             </button>
@@ -109,7 +110,7 @@
                             </div>
 
                             <div class="overflow-auto w-3/4 flex flex-wrap content-start" style="max-height: 480px">
-                                <template x-for="(item, idx) in lol.modified_items" >
+                                <template x-for="(item, idx) in lol.modified_items" :key="idx">
                                     <x-shop-item/>
                                 </template>
 

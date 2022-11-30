@@ -1,7 +1,7 @@
 import Lol from "../lol";
-import Item from "./item";
-import ShopEvent from "./shop_event";
-import Participant from "./Participant";
+import Item from "./item/item";
+import ShopEvent from "./participant/frame/shop_event";
+import Participant from "./participant/participant";
 
 export default class ItemsController {
     items: number[] = [];

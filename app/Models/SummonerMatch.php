@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\DB;
  * @property-read int|null $items_count
  * @property-read \App\Models\Matche|null $match
  * @property-read \App\Models\Summoner|null $summoner
+ *
  * @method static Builder|SummonerMatch championsCalc($championIds)
  * @method static Builder|SummonerMatch filters($filters)
  * @method static Builder|SummonerMatch newModelQuery()
@@ -244,7 +245,8 @@ class SummonerMatch extends Model
 
     public function scopeChampionsCalc(Builder $query, $championIds)
     {
-        return $query->select('champion_id',
+        return $query->select(
+            'champion_id',
             DB::raw('count(*) as total'),
             DB::raw('sum(won) as wins'),
             DB::raw('avg(kills) as avg_kills'),

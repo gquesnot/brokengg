@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Data\ChampionStats;
-use App\Data\ItemStats;
-use App\Data\ItemMythicStats;
+use App\Data\champion\ChampionStats;
+use App\Data\item\ItemMythicStats;
+use App\Data\item\ItemStats;
 use App\Models\Champion;
 use App\Models\Item;
 use App\Models\Map;
@@ -15,35 +15,32 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use voku\helper\HtmlDomParser;
 
-
 class SyncLolController extends Controller
 {
     public $client;
 
     private array $wikStatsMapping = [
-        " ability haste" => "ah",
-        " ability power" => "ap",
-        "% bonus movement speed" => "msPercent",
-        "% magic penetration" => "magicPenPercent",
-        "% armor penetration" => "armorPenPercent",
-        "% bonus attack speed" => "asPercent",
-        "% omnivamp" => "omnivamp",
-        " armor" => "armor",
-        " lethality" => "lethality",
-        " magic penetration" => "magicPen",
-        " magic resistance" => "mr",
-        " bonus movement speed" => "ms",
-        " bonus health" => "hp",
-        " tenacity" => "tenacity",
-        " slow resistance" => "slowResistance",
-        " bonus attack damage" => "ad",
+        ' ability haste' => 'ah',
+        ' ability power' => 'ap',
+        '% bonus movement speed' => 'msPercent',
+        '% magic penetration' => 'magicPenPercent',
+        '% armor penetration' => 'armorPenPercent',
+        '% bonus attack speed' => 'asPercent',
+        '% omnivamp' => 'omnivamp',
+        ' armor' => 'armor',
+        ' lethality' => 'lethality',
+        ' magic penetration' => 'magicPen',
+        ' magic resistance' => 'mr',
+        ' bonus movement speed' => 'ms',
+        ' bonus health' => 'hp',
+        ' tenacity' => 'tenacity',
+        ' slow resistance' => 'slowResistance',
+        ' bonus attack damage' => 'ad',
 
     ];
 
     public function index()
     {
-
-
         $version = $this->syncVersion();
         $this->syncChampions($version->name);
         $this->syncItems($version->name);
@@ -67,26 +64,23 @@ class SyncLolController extends Controller
 
     private function syncChampions($version)
     {
-        $champions = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/cdn/' . $version . '/data/en_US/champion.json')->json();
+        $champions = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/cdn/'.$version.'/data/en_US/champion.json')->json();
         foreach ($champions['data'] as $championName => $champion) {
-            $champion_detail = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/cdn/' . $version . '/data/en_US/champion/' . $championName . '.json')->json()['data'][$championName];
+            $champion_detail = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/cdn/'.$version.'/data/en_US/champion/'.$championName.'.json')->json()['data'][$championName];
             $stats = ChampionStats::from_api($champion_detail['stats']);
             $champion_db = Champion::find($champion['key']);
 
-            if (!$champion_db) {
+            if (! $champion_db) {
                 $champion_db = new Champion();
                 $champion_db->id = $champion['key'];
                 $champion_db->champion_id = $champion['id'];
                 $champion_db->name = $championName;
                 $champion_db->title = $champion['title'];
                 $champion_db->img_url = $champion['image']['full'];
-
             }
             $champion_db->stats = $stats;
             $champion_db->save();
         }
-
-
     }
 
 //    public function syncTypes()
@@ -102,15 +96,14 @@ class SyncLolController extends Controller
 
     private function syncItems($version)
     {
-
-        $items = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/cdn/' . $version . '/data/en_US/item.json')->json();
+        $items = Http::withoutVerifying()->get('https://ddragon.leagueoflegends.com/cdn/'.$version.'/data/en_US/item.json')->json();
         $stats_keys = [];
         foreach ($items['data'] as $itemId => $item) {
             $stats = [];
-            if (str_contains($item['description'], "ornnBonus")) {
+            if (str_contains($item['description'], 'ornnBonus')) {
                 continue;
             }
-            if (count($item['stats']) > 0 && $item['description'] != "") {
+            if (count($item['stats']) > 0 && $item['description'] != '') {
                 $stats = $this->parseXmlDescription($item['description']);
                 if ($itemId === '4645') {
                     $stats_details['magic penetration'] = 15;
@@ -118,8 +111,9 @@ class SyncLolController extends Controller
             }
             $stats_keys = array_merge($stats_keys, array_keys($stats));
             $gold = $item['gold']['total'];
-            if ($gold == 0)
+            if ($gold == 0) {
                 continue;
+            }
             $itemDb = Item::find($itemId);
             $stats = ItemStats::from_api($stats);
 
@@ -147,15 +141,13 @@ class SyncLolController extends Controller
                     'img_url' => $item['image']['full'],
                 ]);
             }
-
         }
-       // dd(array_unique($stats_keys));
+        // dd(array_unique($stats_keys));
         $this->scrapLolFandom();
     }
 
     private function syncModes()
     {
-
         $modes = Http::withoutVerifying()->get('https://static.developer.riotgames.com/docs/lol/gameModes.json')->json();
         foreach ($modes as $mode) {
             $this->getFirstOrCreate($mode);
@@ -163,7 +155,7 @@ class SyncLolController extends Controller
     }
 
     /**
-     * @param mixed $mode
+     * @param  mixed  $mode
      * @return void
      */
     private function getFirstOrCreate(mixed $mode): void
@@ -220,19 +212,19 @@ class SyncLolController extends Controller
             }
             $name = trim($tmp_description[1]);
             $value = $tmp_description[0];
-            if (str_contains($value, "%")) {
-                $value = str_replace("%", "", $value);
-                $name = $name . " Percent";
+            if (str_contains($value, '%')) {
+                $value = str_replace('%', '', $value);
+                $name = $name.' Percent';
             }
 
             $result[strtolower($name)] = $value;
         }
+
         return $result;
     }
 
     public function scrapLolFandom()
     {
-
         $legendary = Http::withoutVerifying()->get('https://leagueoflegends.fandom.com/wiki/Template:Items/List')->body();
         $dom = HtmlDomParser::str_get_html($legendary);
         $root = $dom->findOne('#items #grid #item-grid #grid #item-grid');
@@ -240,7 +232,6 @@ class SyncLolController extends Controller
         $allItems = $root->find('.tlist');
         $itemsCateogry = [];
         for ($i = 0; $i < count($categoryNames); $i++) {
-
             $categoryName = $categoryNames[$i]->text();
             $itemsList = $allItems[$i]->find('.item-icon');
             $itemsName = [];
@@ -261,7 +252,7 @@ class SyncLolController extends Controller
                 if ($itemName == "'Your Cut'") {
                     $itemName = 'Your Cut';
                 } //magic boots
-                else if ($itemName == "Slightly Magical Boots") {
+                elseif ($itemName == 'Slightly Magical Boots') {
                     $itemName = 'Slightly Magical Footwear';
                 }
                 $items = Item::where('name', $itemName)->get();
@@ -284,25 +275,23 @@ class SyncLolController extends Controller
         $items = Item::whereType('mythic')->get();
         $res = [];
         foreach ($items as $item) {
-
             $url = "https://leagueoflegends.fandom.com/api.php?format=json&action=parse&disablelimitreport=true&prop=text&title=List_of_items&text={{Tooltip/Item|item=$item->name|enchantment=|variant=|game=lol}}";
             $datas = Http::withoutVerifying()->get($url)->json()['parse']['text']['*'];
             $mythicStats = $this->findMythicStatsInHtml($item, $datas);
             $res = array_merge($res, array_keys($mythicStats));
-           // $stats = $item->stats_description;
-            $item->mythic_stats =ItemMythicStats::from_api($mythicStats);
+            // $stats = $item->stats_description;
+            $item->mythic_stats = ItemMythicStats::from_api($mythicStats);
             $item->save();
-
         }
     }
 
     public function findMythicStatsInHtml($item, $datas)
     {
-        $dom =  HtmlDomParser::str_get_html($datas);
+        $dom = HtmlDomParser::str_get_html($datas);
         $rows = $dom->find('table tr');
         $res = [];
         foreach ($rows as $row) {
-            if ($row->childNodes()[0]->text() == "Mythic:") {
+            if ($row->childNodes()[0]->text() == 'Mythic:') {
                 // use regex pattern to find all stats like number% or number + stat (can be 1 or 2 words)
                 // exemple : 10% Attack Speed => "Attack speed" = 10
                 // exemple : 200 Health => "Health" = 200
@@ -325,19 +314,19 @@ class SyncLolController extends Controller
                             $keys = Str::of($key)->explode('_');
                             $key = $keys->take(count($keys) - 1)->implode('_');
                         }
-                        if (str_contains($value, "%")) {
-                            $value = str_replace("%", "", $value);
-                            $key = $key."_percent";
+                        if (str_contains($value, '%')) {
+                            $value = str_replace('%', '', $value);
+                            $key = $key.'_percent';
                         }
 
                         // take 2 first words of key
 
                         $res[$key] = $value;
                     }
-
                 }
             }
         }
+
         return $res;
     }
 
@@ -348,8 +337,8 @@ class SyncLolController extends Controller
                 return ['str' => $key, 'key' => $value];
             }
         }
-        return null;
 
+        return null;
     }
 
     public function parseHtmlTag($text, $htmlTag)
@@ -359,9 +348,9 @@ class SyncLolController extends Controller
         $text = explode("<${htmlTag}>", $text);
         if (count($text) !== 2) {
             //dd($text, $originalText);
-            return "";
+            return '';
         }
+
         return $text[1];
     }
-
 }
