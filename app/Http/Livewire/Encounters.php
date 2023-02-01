@@ -33,13 +33,15 @@ class Encounters extends Component
 
     public function render()
     {
-        $encountersMatchIds = $this->me->getCachedMatchesQuery($this->filters);
-        $encounters = $this->me->getCachedEncounters($encountersMatchIds, $this->filters);
+        $matches_data = $this->me->getMatchesCache($this->filters);
+        $encounters = $matches_data['encounters'];
+
         if ($this->search) {
             $summonerIds = Summoner::where('name', 'like', '%'.$this->search.'%')->pluck('id');
             $encounters = $encounters->filter(function ($total, $key) use ($summonerIds) {
                 return $summonerIds->contains($key);
             });
+
         }
         $encounters = $encounters->sortBy(fn ($summoner) => $summoner, SORT_REGULAR, true);
         $encountersPaginate = $encounters->forPage($this->page, $this->perPage);

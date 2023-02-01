@@ -5,7 +5,7 @@
             <div class="flex w-full">
                 <button class="w-full p-2 bg-indigo-600 text-white rounded shadow mr-4" @click="$clipboard(versus_text)">Copy Versus as text</button>
                 <button class="ml-4 w-full p-2 bg-indigo-600 text-white rounded shadow" wire:click="sendChampSelectMessage" >Send champ select message</button>
-                <button class="ml-4 w-full p-2 bg-indigo-600 text-white rounded shadow" wire:click="sendOtherMessage" >Send other message</button>
+                <button class="ml-4 w-full p-2 bg-indigo-600 text-white rounded shadow" wire:click="sendOtherMessage" >Send direct message</button>
 
             </div>
             <div class="border-b"></div>

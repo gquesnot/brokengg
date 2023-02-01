@@ -60,9 +60,9 @@ class Matches extends Component
         $this->emit('showVersus', $id);
     }
 
-    public function getMatches(): LengthAwarePaginator
+    public function getMatches($count): LengthAwarePaginator
     {
-        return Cache::remember($this->me->getCacheKey('matches_view', $this->filters, $this->me->getMatchesCount()), 60 * 5, function () {
+        return Cache::remember($this->me->getCacheKey('matches_view', $this->filters, $count), 60 * 5, function () {
             $matches_data = $this->me->getMatchesCache($this->filters);
             $matches = SummonerMatch::whereIn('match_id', $matches_data['match_ids']->forPage($this->page, $this->perPage))
                 ->where('summoner_id', $this->me->id)
@@ -106,9 +106,9 @@ class Matches extends Component
         });
     }
 
-    public function getStats(): Stats
+    public function getStats($count): Stats
     {
-        return Cache::remember($this->me->getCacheKey('stats_view', $this->filters,$this->me->getMatchesCount()), 60 * 5, function () {
+        return Cache::remember($this->me->getCacheKey('stats_view', $this->filters,$count), 60 * 5, function () {
             $matches_data = $this->me->getMatchesCache($this->filters);
             return new Stats(
                 SummonerMatch::whereIn('match_id', $matches_data['match_ids'])
@@ -133,9 +133,10 @@ class Matches extends Component
 
     public function render()
     {
+        $count = $this->me->getMatchesCount($this->filters);
         return view('livewire.matches', [
-            'matches' => $this->getMatches(),
-            'stats' => $this->getStats(),
+            'matches' => $this->getMatches($count),
+            'stats' => $this->getStats($count),
         ]);
     }
 }
