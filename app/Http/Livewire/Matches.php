@@ -4,11 +4,13 @@ namespace App\Http\Livewire;
 
 use App\Data\FiltersData;
 use App\Helpers\Stats;
+use App\Models\Matche;
 use App\Models\Summoner;
 use App\Models\SummonerMatch;
 use App\Traits\PaginateTrait;
 use App\Traits\QueryParamsTrait;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
@@ -60,11 +62,11 @@ class Matches extends Component
         $this->emit('showVersus', $id);
     }
 
-    public function getMatches($count): LengthAwarePaginator
+    public function getMatches($count): Collection
     {
         return Cache::remember($this->me->getCacheKey('matches_view', $this->filters, $count), 60 * 5, function () {
             $matches_data = $this->me->getMatchesCache($this->filters);
-            $matches = SummonerMatch::whereIn('match_id', $matches_data['match_ids']->forPage($this->page, $this->perPage))
+            $matches = SummonerMatch::whereIn('summoner_matches.match_id', $matches_data['match_ids']->forPage($this->page, $this->perPage))
                 ->where('summoner_id', $this->me->id)
                 ->select([
                     'kills',
@@ -75,9 +77,9 @@ class Matches extends Component
                     'minions_killed',
                     'kill_participation',
                     'won',
-                    'match_id',
+                    'summoner_matches.match_id',
                     'champion_id',
-                    'id',
+                    'summoner_matches.id',
                     'summoner_id',
                 ])
                 ->with('items:name,img_url')
@@ -87,9 +89,11 @@ class Matches extends Component
                 ->with('match.participants:id,summoner_id,won,champion_id')
                 ->with('match.participants.champion:id,name,img_url')
                 ->with('match.participants.summoner:id,name')
+                ->join('matches', 'matches.id', '=', 'summoner_matches.match_id')
+                ->orderBy('matches.match_creation', 'desc')
                 ->get();
 
-            $matches = $matches->map(function (SummonerMatch $match) use ($matches_data) {
+            return $matches->map(function (SummonerMatch $match) use ($matches_data) {
                 $match->match->setAttribute('participants', $match->match->participants->map(function ($participant) use ($matches_data) {
                     if ($matches_data['encounters']->has($participant->summoner_id)) {
                         $participant->setAttribute('total', $matches_data['encounters']->get($participant->summoner_id));
@@ -102,13 +106,12 @@ class Matches extends Component
 
                 return $match;
             });
-            return new LengthAwarePaginator($matches, $matches_data['match_ids']->count(), $this->perPage, $this->page);
         });
     }
 
     public function getStats($count): Stats
     {
-        return Cache::remember($this->me->getCacheKey('stats_view', $this->filters,$count), 60 * 5, function () {
+        return Cache::remember($this->me->getCacheKey('stats_view', $this->filters, $count), 60 * 5, function () {
             $matches_data = $this->me->getMatchesCache($this->filters);
             return new Stats(
                 SummonerMatch::whereIn('match_id', $matches_data['match_ids'])
@@ -134,8 +137,9 @@ class Matches extends Component
     public function render()
     {
         $count = $this->me->getMatchesCount($this->filters);
+        $matches = $this->getMatches($count);
         return view('livewire.matches', [
-            'matches' => $this->getMatches($count),
+            'matches' => new LengthAwarePaginator($matches, $matches->count(), $this->perPage, $this->page),
             'stats' => $this->getStats($count),
         ]);
     }

@@ -66,9 +66,8 @@ class Summoner extends Model
 
     public function getMatchesCache(FiltersData $filters)
     {
-        $count = $this->getMatchesCount($filters);
-
-        $cache_key = $this->getCacheKey('matches', $filters, $count);
+        $matchesCount = $this->getMatchesCount($filters);
+        $cache_key = $this->getCacheKey('matches', $filters, $matchesCount);
         return Cache::remember($cache_key, 60 * 24, function () use ($filters) {
             $matches_ids = $this->getMatchesQuery($filters)
                 ->pluck('id');
@@ -185,7 +184,7 @@ class Summoner extends Model
             ->count();
     }
 
-    public function getMatchesQuery($filters){
+    public function getMatchesQuery( FiltersData$filters): Builder{
         $query=  SummonerMatch::whereSummonerId($this->id);
         if ($filters->champion){
             $query->whereChampionId($filters->champion);
