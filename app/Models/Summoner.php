@@ -27,7 +27,6 @@ use Illuminate\Support\Facades\DB;
  * @property int $auto_update
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
- *
  * @method static Builder|Summoner newModelQuery()
  * @method static Builder|Summoner newQuery()
  * @method static Builder|Summoner query()
@@ -65,30 +64,62 @@ class Summoner extends Model
         'complete' => 'boolean',
     ];
 
-    public function getCachedMatchesQuery(?FiltersData $filters = null)
-    {
-        $count = $this->getMatchesQuery($filters)->count();
 
-        return Cache::remember($this->getCacheKey('matche_ids', $filters, $count), 60 * 5, function () use ($filters) {
-            return $this->getMatchesQuery($filters)->pluck('id');
+    public function getMatchesCache(FiltersData $filters)
+    {
+        $count = $this->getMatchesCount();
+        $cache_key = $this->getCacheKey('matches', $filters, $count);
+        return Cache::remember($cache_key, 60 * 24, function () use ($filters) {
+            $matches_ids = $this->getMatchesQuery($filters)
+                ->whereIn('id', $this->getSummonerMatchesIds($filters))
+                ->pluck('id');
+            if (!$filters->filter_encounters) {
+                $match_encounter_ids = SummonerMatch::whereSummonerId($this->id)->pluck('match_id');
+            }
+            else{
+                $match_encounter_ids = $matches_ids;
+            }
+            return [
+                "match_ids" => $matches_ids,
+                "encounters" => $this->encounters($match_encounter_ids)->pluck('total', 'summoner_id'),
+            ];
         });
     }
 
-    public function getMatchesQuery(FiltersData $filters = null, $limit = null): Builder
+
+    public function getCachedMatchesQuery(?FiltersData $filters = null)
     {
-        $query = Matche::whereUpdated(true)->whereHas('participants', function ($query) use ($filters) {
-            $query->where('summoner_id', $this->id);
-            if ($filters?->champion) {
-                $query->whereChampionId($filters->champion);
-            }
-        })->filters($filters)->orderByDesc('match_creation');
 
-        if ($limit != null) {
-            $query = $query->limit($limit);
-        }
-
-        return $query;
+        return Cache::remember($this->getCacheKey('matche_ids', $filters, $this->getMatchesCount()), 60 * 5, function () use ($filters) {
+            return $this->getMatchesQuery($filters)->whereIn('id', $this->getSummonerMatchesIds($filters))->pluck('id');
+        });
     }
+
+    public function getCachedEncounters(?FiltersData $filters = null)
+    {
+        return Cache::remember($this->getCacheKey('encounters', $filters, $this->getMatchesCount()), 60 * 5, function () use ($filters) {
+            return $this->encounters($filters)->pluck('total', 'summoner_id');
+        });
+    }
+
+    public function getMatchesQuery(?FiltersData $filters = null, bool $applyFilters = true)
+    {
+        $query = Matche::whereUpdated(true);
+        if ($applyFilters && $filters) {
+            $query->filters($filters);
+        }
+        return $query->orderByDesc('match_creation');
+    }
+
+    public function getSummonerMatchesIds(?FiltersData $filters = null, bool $applyFilters = true)
+    {
+        $query = SummonerMatch::whereSummonerId($this->id);
+        if ($applyFilters && $filters && $filters->champion) {
+            $query->whereChampionId($filters->champion);
+        }
+        return $query->pluck('match_id');
+    }
+
 
     public function getCacheKey($cacheName, ?FiltersData $filters, $count)
     {
@@ -99,20 +130,25 @@ class Summoner extends Model
             }
         }
 
-        return $result."_{$this->id}";
+        return $result . "_{$this->id}";
     }
 
-    public function getCachedEncounters($matchIds, ?FiltersData $filters = null)
+    public function getSummonerMatchesFiltered(FiltersData $filters = null, $limit = null)
     {
-        return Cache::remember($this->getCacheKey('encounters', $filters, $matchIds->count()), 60 * 5, function () use ($matchIds) {
-            return $this->encounters($matchIds)->pluck('total', 'summoner_id');
-        });
+        $query = SummonerMatch::whereSummonerId($this->id);
+        if ($filters?->champion) {
+            $query->whereChampionId($filters->champion);
+        }
+        if ($limit != null) {
+            $query = $query->limit($limit);
+        }
+        return $query->pluck('match_id');
     }
 
-    public function encounters($matchIds = null)
+
+    public function encounters($matchIds)
     {
         return SummonerMatch::whereIn('match_id', $matchIds)
-            ->where('summoner_id', '!=', $this->id)
             ->selectRaw('summoner_id, count(*) as total')
             ->groupBy('summoner_id')
             ->orderByDesc('total')
@@ -139,7 +175,7 @@ class Summoner extends Model
 
         $matches = Matche::whereIn('id', $versusMatchIds)
             ->filters($filters)
-            ->select(['id', 'match_creation', 'match_duration', 'match_id', 'map_id', 'mode_id'])
+            ->select(['id', 'match_creation', 'match_duration', 'match_id', 'map_id', 'mode_id', 'match_end'])
             ->with('participants.champion:id,name,img_url', 'mode:id,name')
             ->withWhereHas('participants', function ($query) use ($meId, $otherId) {
                 $query->where('summoner_id', $meId)->orWhere('summoner_id', $otherId);
@@ -166,6 +202,11 @@ class Summoner extends Model
 
             return true;
         });
+    }
+
+    public function getMatchesCount()
+    {
+        return SummonerMatch::whereSummonerId($this->id)->count();
     }
 
     public function champions()

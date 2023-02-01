@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $name
  * @property string $description
- *
  * @method static \Illuminate\Database\Eloquent\Builder|Mode newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Mode newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Mode query()

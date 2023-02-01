@@ -15,12 +15,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $description
  * @property array $tags
  * @property int $gold
- * @property ItemStats $stats
- * @property ItemMythicStats|null $mythic_stats
+ * @property \Spatie\LaravelData\Contracts\BaseData|null $stats
+ * @property \Spatie\LaravelData\Contracts\BaseData|null|null $mythic_stats
  * @property string $colloq
  * @property string $img_url
  * @property string|null $type
- *
  * @method static \Illuminate\Database\Eloquent\Builder|Item newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Item newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Item query()

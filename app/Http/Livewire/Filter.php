@@ -19,7 +19,6 @@ class Filter extends Component
 
     public array $options;
 
-    public Collection $matchesIds;
 
     public Summoner $summoner;
 
@@ -29,11 +28,24 @@ class Filter extends Component
             'me' => $summoner,
             'filters' => $filters,
         ]);
-        $this->matchesIds = collect(DB::select('SELECT match_id FROM summoner_matches WHERE  summoner_id = ?', [$summoner->id]))->pluck('match_id');
+        $matchesIds = collect(DB::select('SELECT match_id FROM `summoner_matches` WHERE  summoner_id = ?', [$summoner->id]))->pluck('match_id');
 
-        $matches = Matche::whereIn('id', $this->matchesIds)->orderByDesc('match_creation')->pluck('id');
-        $recent_champions = SummonerMatch::whereIn('match_id', $matches->forPage(1, 50))->where('summoner_id', $summoner->id)->select(['champion_id', DB::raw('count(*) as total')])->groupBy('champion_id')->orderBy('total', 'DESC')->limit(5)->with('champion')->get()->pluck('champion');
-        $most_played_champions = SummonerMatch::whereIn('match_id', $this->matchesIds)->where('summoner_id', $summoner->id)->select(['champion_id', DB::raw('count(*) as total')])->groupBy('champion_id')->orderBy('total', 'DESC')->limit(5)->with('champion')->get()->pluck('champion');
+        $matches = Matche::whereIn('id', $matchesIds)->orderByDesc('match_creation')->limit(50)->pluck('id');
+        $recent_champions = SummonerMatch::whereIn('match_id', $matches)
+            ->where('summoner_id', $summoner->id)
+            ->select(['champion_id', DB::raw('count(*) as total')])
+            ->groupBy('champion_id')->orderBy('total', 'DESC')
+            ->limit(5)
+            ->with('champion')
+            ->get()
+            ->pluck('champion');
+        $most_played_champions = SummonerMatch::whereIn('match_id', $matchesIds)
+            ->where('summoner_id', $summoner->id)->select(['champion_id', DB::raw('count(*) as total')])
+            ->groupBy('champion_id')
+            ->orderBy('total', 'DESC')
+            ->limit(5)->with('champion')
+            ->get()
+            ->pluck('champion');
         // combine both
         $champions = $recent_champions->merge($most_played_champions)->unique();
         $champion_options = [
@@ -69,7 +81,8 @@ class Filter extends Component
         $this->dispatchBrowserEvent('select2-clear');
         $this->resetErrorBag();
         if ($update) {
-            $this->emit('filtersUpdated', $this->filters);
+            $this->emitTo(BaseSummoner::class, 'updateFilters', $this->filters->toArray());
+
         }
 
         Session::flash('success', 'Filters cleared');
@@ -89,8 +102,7 @@ class Filter extends Component
             'filters.champion.exists' => 'The selected champion is invalid',
             'filters.queue.exists' => 'The selected queue is invalid',
         ])['filters'];
-
-        $this->emit('filtersUpdated', $this->filters->toArray());
+        $this->emitTo(BaseSummoner::class, 'updateFilters', $filters);
         Session::flash('success', 'Filters applied');
     }
 

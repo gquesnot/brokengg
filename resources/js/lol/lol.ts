@@ -107,9 +107,8 @@ export default class Lol {
             this.items_controller.update_items(this.participant, this.frame_id);
             this.items = this.items_controller.items_from_list();
         }
-        this.participant.add_champion_stats();
-        this.participant.add_perks_stats();
-        this.participant.calulate_items(this.items);
+
+        this.participant.calculate_stats(this.items);
         this.calculate_gold();
         this.participant.calculate_dps(this.items);
         this.participant.stats.round_all();

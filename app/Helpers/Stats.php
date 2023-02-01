@@ -28,7 +28,7 @@ class Stats
         $this->game_played = $matches->count();
         if ($this->game_played) {
             $this->game_won = $matches->where('won', true)->count();
-            $this->game_lose = $matches->where('won', false)->count();
+            $this->game_lose = $this->game_played - $this->game_won;
             $this->kill_participation = round($matches->avg('kill_participation') * 100);
             $this->avg_kills = round($matches->sum('kills') / $this->game_played, 1);
             $this->avg_deaths = round($matches->sum('deaths') / $this->game_played, 1);

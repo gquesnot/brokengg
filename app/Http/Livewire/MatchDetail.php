@@ -18,6 +18,8 @@ class MatchDetail extends Component
 
     public string $version;
 
+    public bool $readyToLoad = false;
+
     public function mount(Summoner $me, int $matchId, string $version)
     {
         $this->fill([
@@ -25,6 +27,10 @@ class MatchDetail extends Component
             'version' => $version,
             'match' => Matche::find($matchId),
         ]);
+    }
+
+    public function afterInit(){
+        $this->readyToLoad = true;
     }
 
     public function getItems(): Collection
@@ -43,12 +49,18 @@ class MatchDetail extends Component
 
     public function render()
     {
-        $api = new RiotApi();
-        $participants = $api->getMatchTimeline($this->match);
-        $participant_idx = $participants->first(function ($participant) {
-            return $participant->puuid == $this->me->puuid;
-        })->id;
-        $items = $this->getItems();
+        $participants =collect([]);
+        $participant_idx = 0;
+        $items =collect([]);
+        if ($this->readyToLoad){
+            $api = new RiotApi();
+            $participants = $api->getCachedMatchTimeline($this->match);
+            $participant_idx = $participants->first(function ($participant) {
+                return $participant->puuid == $this->me->puuid;
+            })->id;
+            $items = $this->getItems();
+        }
+
 
         return view('livewire.match-detail', [
             'participants' => $participants->toArray(),

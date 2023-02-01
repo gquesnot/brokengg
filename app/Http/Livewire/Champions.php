@@ -33,8 +33,6 @@ class Champions extends Component
 
     public function render()
     {
-        $query = SummonerMatch::whereSummonerId($this->me->id)
-            ->filters($this->filters);
         $championIds = SummonerMatch::whereSummonerId($this->me->id)
             ->filters($this->filters)
             ->select(DB::raw('champion_id, count(*) as total'))

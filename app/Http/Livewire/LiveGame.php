@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Data\FiltersData;
 use App\Models\Champion as ChampionModel;
 use App\Models\Map;
 use App\Models\Mode;
@@ -47,9 +48,18 @@ class LiveGame extends Component
     public function getLiveGame()
     {
         $riotApi = new \App\Helpers\RiotApi();
-        // TODO MAKE AGAIN
         $data = $riotApi->getSummonerLiveGame($this->me);
+
         $this->loaded = $data != null;
+        try {
+            $status = $data->status->status_code;
+            if ($status == 404) {
+                $this->loaded = false;
+            }
+        }
+        catch (\Exception $e) {
+            $this->loaded = true;
+        }
         if (! $this->loaded) {
             return;
         }
@@ -94,8 +104,8 @@ class LiveGame extends Component
             return;
         }
         $riotApi = new \App\Helpers\RiotApi();
-        $encountersMatchIds = $this->me->getCachedMatchesQuery([]);
-        $encounters = $this->me->getCachedEncounters($encountersMatchIds, []);
+        $encountersMatchIds = $this->me->getCachedMatchesQuery(FiltersData::from([]));
+        $encounters = $this->me->getCachedEncounters($encountersMatchIds, FiltersData::from([]));
         $this->lobbyParticipants = collect(explode("\n", $this->search))->map(function ($name) use ($encounters, $riotApi) {
             if (str_contains($name, 'joined the lobby')) {
                 $name = str_replace(' joined the lobby', '', $name);

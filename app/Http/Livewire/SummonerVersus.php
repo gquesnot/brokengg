@@ -59,7 +59,7 @@ class SummonerVersus extends Component
         $result[] = 'Avg kda: '.$me_stat->kda.' vs '.$other_stat->kda;
         $result[] = 'Games played: '.$me_stat->game_played;
         foreach ($details as $detail) {
-            $result[] = $detail->since_match_end.' '.$detail->me->champion->name.' '.$detail->me->kda.' vs '.$detail->other->kda.' '.$detail->other->champion->name;
+            $result[] = $detail->sinceMatchEnd().' '.$detail->me->champion->name.' '.$detail->me->kda.' vs '.$detail->other->kda.' '.$detail->other->champion->name;
         }
 
         return $result;

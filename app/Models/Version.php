@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property string $name
- *
  * @method static \Illuminate\Database\Eloquent\Builder|Version newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Version newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Version query()

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Data\FiltersData;
 use App\Data\match_timeline\PerksData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -40,7 +41,6 @@ use Illuminate\Support\Facades\DB;
  * @property-read int|null $items_count
  * @property-read \App\Models\Matche|null $match
  * @property-read \App\Models\Summoner|null $summoner
- *
  * @method static Builder|SummonerMatch championsCalc($championIds)
  * @method static Builder|SummonerMatch filters($filters)
  * @method static Builder|SummonerMatch newModelQuery()
@@ -220,24 +220,24 @@ class SummonerMatch extends Model
         );
     }
 
-    public function scopeFilters(Builder $query, $filters): Builder
+    public function scopeFilters(Builder $query, FiltersData $filters): Builder
     {
-        if (! empty($filters)) {
-            if (Arr::get($filters, 'queue') != null || Arr::get($filters, 'date_start') != null || Arr::get($filters, 'date_end') != null) {
+        if ($filters) {
+            if ($filters->queue != null || $filters->date_start != null || $filters->date_end != null) {
                 $query = $query->whereHas('match', function (Builder $query) use ($filters) {
-                    if (Arr::get($filters, 'queue') != null) {
-                        $query->where('queue_id', $filters['queue']);
+                    if ($filters->queue != null) {
+                        $query->where('queue_id', $filters->queue);
                     }
-                    if (Arr::get($filters, 'date_start') != null) {
-                        $query->where('match_creation', '>=', $filters['date_start']);
+                    if ($filters->date_start != null) {
+                        $query->where('match_creation', '>=', $filters->date_start);
                     }
-                    if (Arr::get($filters, 'date_end') != null) {
-                        $query->where('match_creation', '<=', $filters['date_end']);
+                    if ($filters->date_end != null) {
+                        $query->where('match_creation', '<=', $filters->date_end);
                     }
                 });
             }
-            if (Arr::get($filters, 'champion') != null) {
-                $query->where('champion_id', $filters['champion']);
+            if ($filters->champion != null) {
+                $query->where('champion_id', $filters->champion);
             }
         }
 

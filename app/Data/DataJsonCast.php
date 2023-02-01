@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 
 class DataJsonCast extends Data implements Castable
 {
-    use WireableData;
+    use \Spatie\LaravelData\Concerns\WireableData;
 
     public function toArray(bool $get_all = false): array
     {

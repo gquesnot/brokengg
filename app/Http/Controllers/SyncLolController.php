@@ -12,6 +12,7 @@ use App\Models\Mode;
 use App\Models\Queue;
 use App\Models\Version;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use voku\helper\HtmlDomParser;
 
@@ -49,6 +50,7 @@ class SyncLolController extends Controller
         $this->syncMaps();
         //$this->syncTypes();
         $this->syncQueues();
+        #$this->downloadJsonsChampionsItems();
     }
 
     private function syncVersion()
@@ -360,5 +362,23 @@ class SyncLolController extends Controller
         }
 
         return $text[1];
+    }
+
+    public function downloadJsonsChampionsItems()
+    {
+        foreach (Champion::all() as $champion){
+            $response = Http::withoutVerifying()
+                ->get("http://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions/{$champion->name}.json");
+            Storage::put("champions/{$champion->name}.json", $response->body());
+
+        }
+        $response = Http::withoutVerifying()
+            ->get("http://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions.json");
+        Storage::put("champions.json", $response->body());
+    }
+    private function downloadJsonItems(){
+        $response = Http::withoutVerifying()
+            ->get("http://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/items.json");
+        Storage::put("items.json", $response->body());
     }
 }

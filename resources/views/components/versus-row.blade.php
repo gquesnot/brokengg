@@ -6,13 +6,13 @@
 <div @class(["border flex justify-center border-gray my-2 py-2", "bg-blue-200" => $detail->me->won, "bg-red-200" => !$detail->me->won])>
     <div class="flex justify-center text-center items-center mr-4">
         <div>
-            {{$detail->since_match_end}}
+            {{$detail->sinceMatchEnd()}}
         </div>
     </div>
     <div class="flex flex-col text-center">
         <div class="font-medium">{{$detail->mode->name}}</div>
         <div @class(["text-blue-600" => $detail->me->won , "text-red-600"=>!$detail->me->won, "text-center"])>{{$detail->me->won ? "won" : "lose"}}</div>
-        <div>{{$detail->match_duration}}</div>
+        <div>{{$detail->match_duration->format('H:i:s')}}</div>
     </div>
     <div class="flex w-1/3 justify-center">
 

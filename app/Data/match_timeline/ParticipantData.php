@@ -32,11 +32,24 @@ class ParticipantData extends Data
 
     public static function fromApi(SummonerMatch $participant, int $index, array $match_timeline)
     {
-        $frames = collect($match_timeline['frames'])->map(function ($frame) use ($index) {
+        $destroyed = collect([]);
+        $undo = collect([]);
+        $sold = collect([]);
+
+        $frames = collect($match_timeline['frames'])->map(function ($frame) use ($index, $destroyed, $undo, $sold) {
             $participant_frame = collect($frame['participantFrames'])->firstWhere('participantId', $index);
-            $events = collect($frame['events'])->filter(function ($event) use ($index) {
+            $events = collect($frame['events'])->filter(function ($event) use ($index, $destroyed, $undo, $sold) {
                 return Arr::get($event, 'participantId', 0) == $index && Str::contains($event['type'], 'ITEM');
-            })->map(function ($event) {
+            })->map(function ($event) use ($destroyed, $undo, $sold) {
+                if ($event['type'] == "ITEM_DESTROYED"){
+                    $destroyed->push($event);
+                }
+                if ($event['type'] == "ITEM_UNDO"){
+                    $undo->push($event);
+                }
+                if ($event['type'] == "ITEM_SOLD"){
+                    $sold->push($event);
+                }
                 return ShopEventData::from(
                     [
                         'type' => $event['type'],
@@ -59,7 +72,7 @@ class ParticipantData extends Data
 
             ]);
         });
-
+//        dd($destroyed, $undo, $sold);
         return ParticipantData::from([
             'id' => $index,
             'name' => $participant->summoner->name,

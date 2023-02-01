@@ -15,6 +15,7 @@ use App\Models\SummonerMatch;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -196,6 +197,9 @@ class RiotApi
     public function updateMatch(Matche $match): bool
     {
         $data = $this->retryFn(fn () => $this->getMatchDetail($match->match_id));
+        if (!isset($data->info)){
+            dd($data);
+        }
         $info = $data->info;
         if ($info->gameMode == '' || $info->mapId == 0 || $info->queueId == 0) {
             // custom game
@@ -282,8 +286,15 @@ class RiotApi
         $match->map_id = $info->mapId;
         $match->queue_id = $info->queueId;
 
-        $match->match_creation = Carbon::createFromTimestamp($info->gameStartTimestamp / 1000)->format('Y-m-d H:i:s');
-        $match->match_duration = Carbon::createFromTimestamp($info->gameDuration)->format('H:i:s');
+        $gameStart = Carbon::createFromTimestamp($info->gameCreation / 1000);
+        $gameDuration = Carbon::createFromTimestamp($info->gameDuration);
+        $gameEnd = $gameStart->copy()
+            ->addSeconds($gameDuration->second)
+            ->addMinutes($gameDuration->minute)
+            ->addHours($gameDuration->hour);
+        $match->match_creation = $gameStart->format('Y-m-d H:i:s');
+        $match->match_duration = $gameDuration->format('H:i:s');
+        $match->match_end = $gameEnd->format('Y-m-d H:i:s');
         $match->updated = true;
         $match->save();
 
@@ -310,16 +321,10 @@ class RiotApi
         Log::info('clear matches: '.$ids->count());
     }
 
-    public function waitApiOk($retry_after): bool
+    public function waitApiOk(): bool
     {
-        if (is_array($retry_after)) {
-            $retry_after = $retry_after[0];
-        }
-        if (is_string($retry_after)) {
-            $retry_after = intval($retry_after);
-        }
-        sleep($retry_after + 5);
 
+        sleep(150);
         return true;
     }
 
@@ -331,8 +336,12 @@ class RiotApi
                 'query' => $params,
             ];
             //$response = $this->client->request('GET', $url, $all_params);
-            $json = json_decode(Http::withoutVerifying()->withHeaders($this->getHeaders())->get($url, $all_params));
+            $json = json_decode(Http::withoutVerifying()->withHeaders($this->getHeaders())->get($url, $params)->body());
             if ($json != null) {
+                if (isset($json->status) && $json->status->status_code == 429) {
+                    $this->waitApiOk();
+                    return $this->doGetWithRetry($url, $params);
+                }
                 return $json;
             } else {
                 echo 'error '.PHP_EOL;
@@ -341,10 +350,6 @@ class RiotApi
         } catch (GuzzleException $e) {
             if (str_contains($e->getMessage(), '"message":"Data not found"')) {
                 return null;
-            }
-            if (array_key_exists('Retry-After', $e->getResponse()->getHeaders())) {
-                $retry_after = $e->getResponse()->getHeaders()['Retry-After'];
-                $this->waitApiOk($retry_after);
             }
         }
 
@@ -359,10 +364,10 @@ class RiotApi
             'count' => $limit,
             'start' => $offset,
         ];
+
         if ($queueId) {
             $params['queue'] = $queueId;
         }
-
         return $this->doGetWithRetry($url, $params);
     }
 

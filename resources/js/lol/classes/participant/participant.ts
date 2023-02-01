@@ -2,9 +2,17 @@ import {Frame} from "./frame/frame";
 import {Champion} from "../champion/champion";
 import Stats from "./stats";
 import Item from "../item/item";
-import {has_brk, has_dominik, has_guinsoo, has_ie, has_nashor, has_rageknife, has_witsend} from "../../util/util";
+import {
+    has_brk,
+    has_dominik,
+    has_guinsoo,
+    has_ie,
+    has_nashor,
+    has_rabadon,
+    has_rageknife,
+    has_witsend
+} from "../../util/util";
 import ParticipantPerks from "./participant_perks";
-
 
 
 export default class Participant {
@@ -21,34 +29,12 @@ export default class Participant {
     perks: ParticipantPerks = new ParticipantPerks();
 
 
+    calculate_stats(items: Item[]) {
+        this.add_champion_stats();
+        this.add_perks_stats();
+        this.calulate_items(items);
 
-
-    add_perks_stats(){
-        this.stats.add_perks(this.perks, this.current_frame.level);
-    }
-
-
-    add_champion_stats() {
-        if (this.champion !== null) {
-            this.stats.add_champion(this.champion, this.current_frame.level);
-        }
-    }
-
-    set_stats_from_current_frame() {
-        this.stats.add_frame(this.current_frame);
-    }
-
-    select_participant_frame(frame_id: number) {
-        this.current_frame = this.frames[frame_id];
-    }
-
-    calulate_items(items: Item[]) {
-        let nb_legendary: number = items.filter((item: Item) => {
-            return item.type === 'legendary';
-        }).length;
-        items.forEach((item) => {
-            this.stats.add_item(item, nb_legendary);
-        });
+        // end
         this.stats.as = this.stats.base_as * (1 + this.stats.as_percent / 100);
         if (this.stats.as > 2.5) {
             this.stats.as = 2.5;
@@ -60,9 +46,22 @@ export default class Participant {
         }
         if (this.stats.adaptative.ad || this.stats.adaptative.ap) {
             if (this.stats.base_ad > this.stats.ap) {
-                this.stats.ad +=  this.stats.adaptative.ad;
-                this.stats.ap +=  this.stats.adaptative.ap;
+                this.stats.ad += this.stats.adaptative.ad;
+                this.stats.ap += this.stats.adaptative.ap;
             }
+        }
+    }
+
+    calulate_items(items: Item[]) {
+        let nb_legendary: number = items.filter((item: Item) => {
+            return item.type === 'legendary';
+        }).length;
+        items.forEach((item) => {
+            this.stats.add_item(item, nb_legendary);
+        });
+
+        if (has_rabadon(items)) {
+            this.stats.ap *= 1.35;
         }
     }
 
@@ -138,6 +137,24 @@ export default class Participant {
         this.stats.dps_true_damage_taken = participant.stats.dps_true;
         this.stats.dps_total_damage_taken = this.stats.dps_ad_damage_taken + this.stats.dps_ap_damage_taken + this.stats.dps_true_damage_taken;
         this.stats.round_all();
+    }
+
+    add_perks_stats() {
+        this.stats.add_perks(this.perks, this.current_frame.level);
+    }
+
+    add_champion_stats() {
+        if (this.champion !== null) {
+            this.stats.add_champion(this.champion, this.current_frame.level);
+        }
+    }
+
+    set_stats_from_current_frame() {
+        this.stats.add_frame(this.current_frame);
+    }
+
+    select_participant_frame(frame_id: number) {
+        this.current_frame = this.frames[frame_id];
     }
 
 

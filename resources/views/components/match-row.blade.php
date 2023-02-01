@@ -2,9 +2,9 @@
 	<div class="flex relative mx-2 items-center w-1/6">
 		<div class="flex flex-col text-center w-2/3">
 			<div class="font-medium">{{$match->match->mode->name}}</div>
-			<div>{{$match->match->since_match_end}}</div>
+			<div>{{$match->match->sinceMatchEnd()}}</div>
 			<div @class(["text-blue-600" => $match->won , "text-red-600"=>!$match->won, "text-center"])>{{$match->won ? "won" : "lose"}}</div>
-			<div>{{$match->match->match_duration}}</div>
+			<div>{{$match->match->match_duration->format('H:i:s')}}</div>
 
 		</div>
 		{{--                                champion img url --}}
@@ -62,7 +62,7 @@
 			@endforeach
 		</div>
 	</div>
-    <a class="flex items-center justify-end w-1/4 mr-8">
+    <div class="flex items-center justify-end w-1/4 mr-8">
         <a href="{{route(\App\Enums\TabEnum::MATCH_DETAIL->value, ['matchId' => $match->match->id, 'summonerId' => $me->id])}}"><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded h-fit">
             View
         </button></a>

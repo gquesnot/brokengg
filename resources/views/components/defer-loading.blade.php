@@ -1,4 +1,3 @@
-<!-- This example requires Tailwind CSS v2.0+ -->
 <div class="absolute w-full h-full z-10 inset-0 overflow-y-auto animate-pulse" aria-labelledby="modal-title"
      role="dialog"
      aria-modal="true">

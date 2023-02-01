@@ -7,7 +7,7 @@ use Livewire\Wireable;
 
 class FiltersData extends \Spatie\LaravelData\Data implements Wireable
 {
-    use WireableData;
+    use \Spatie\LaravelData\Concerns\WireableData;
 
     public function __construct(
         public ?string $date_start = null,

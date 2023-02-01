@@ -10,11 +10,11 @@ trait QueryParamsTrait
         if ($this->filters != null) {
             foreach ($this->filters as $key => $value) {
                 if ($value != null) {
-                    $result["filters[$key]"] = $value;
+                    $result[$key] = $value;
                 }
                 if ($key == 'filter_encounters') {
                     if ($value) {
-                        $result["filters[$key]"] = 1;
+                        $result[$key] = 1;
                     }
                 }
             }

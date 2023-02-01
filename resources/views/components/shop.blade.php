@@ -98,7 +98,7 @@
                                 <ul role="list" class="divide-y divide-gray-200">
                                     <template x-for="(item_category, idx) in lol.items_categories" :key="idx">
                                         <li class="relative">
-                                            <button @click="select_category(idx)"
+                                            <button @click="lol.select_category(idx)"
                                                     :class="lol.category_id == idx ? 'btn text-white w-full focus:border-none bg-indigo-700': 'btn-white w-full'"
                                                     style="height:2rem"
                                             ><span x-html="item_category.name"></span>

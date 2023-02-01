@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $map
  * @property string $description
- *
  * @method static \Illuminate\Database\Eloquent\Builder|Queue newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Queue newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Queue query()
