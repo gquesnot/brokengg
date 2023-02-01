@@ -8,5 +8,5 @@ environments:
     build:
       - 'composer install --no-dev'
       - 'php artisan optimize'
-      - 'npm install && npm vite build'
+      - 'npm install && npm run vite build'
       - 'php artisan migrate:fresh --seed --force'
