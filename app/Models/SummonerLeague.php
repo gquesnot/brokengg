@@ -21,5 +21,5 @@ use Illuminate\Database\Eloquent\Model;
  */
 class SummonerLeague extends Model
 {
-    use HasFactory;
+
 }

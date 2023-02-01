@@ -21,8 +21,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ItemSummonerMatch extends Model
 {
-    use HasFactory;
-
     public $table = 'item_summoner_match';
 
     public $timestamps = false;

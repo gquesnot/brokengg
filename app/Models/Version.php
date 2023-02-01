@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Version extends Model
 {
-    use HasFactory;
 
     public $timestamps = false;
 

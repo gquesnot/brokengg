@@ -17,7 +17,7 @@ use Spatie\LaravelData\WithData;
  * @property string $title
  * @property string $img_url
  * @property string $champion_id
- * @property \Spatie\LaravelData\Contracts\BaseData|null|null $stats
+ * @property ChampionStats $stats
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
  * @method static \Illuminate\Database\Eloquent\Builder|Champion newModelQuery()
@@ -33,7 +33,6 @@ use Spatie\LaravelData\WithData;
  */
 class Champion extends Model
 {
-    use HasFactory;
     use WithData;
 
     protected $dataClass = ChampionData::class;

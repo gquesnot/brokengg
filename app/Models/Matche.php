@@ -17,12 +17,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $mode_id
  * @property int|null $map_id
  * @property int|null $queue_id
- * @property Carbon|null $match_creation
- * @property Carbon|null $match_end
- * @property Carbon|null $match_duration
+ * @property \Illuminate\Support\Carbon|null $match_creation
+ * @property \Illuminate\Support\Carbon|null $match_end
+ * @property \Illuminate\Support\Carbon|null $match_duration
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Spatie\LaravelData\Contracts\BaseData|null $details
  * @property-read \App\Models\Map|null $map
  * @property-read \App\Models\Mode|null $mode
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $participants
@@ -48,7 +47,6 @@ use Illuminate\Database\Eloquent\Model;
 class Matche extends Model
 {
 
-
     protected $fillable = [
         'match_id',
         'mode_id',
@@ -57,12 +55,8 @@ class Matche extends Model
         'match_creation',
         'match_end',
         'match_duration',
-        'details',
     ];
 
-    public $casts = [
-        'details' => ParticipantData::class,
-    ];
 
     public $dates = [
         'match_creation',

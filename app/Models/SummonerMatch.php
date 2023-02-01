@@ -35,14 +35,14 @@ use Illuminate\Support\Facades\DB;
  * @property int $triple_kills
  * @property int $quadra_kills
  * @property int $penta_kills
- * @property \Spatie\LaravelData\Contracts\BaseData|null $perks
+ * @property PerksData $perks
  * @property-read \App\Models\Champion|null $champion
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Item[] $items
  * @property-read int|null $items_count
  * @property-read \App\Models\Matche|null $match
  * @property-read \App\Models\Summoner|null $summoner
  * @method static Builder|SummonerMatch championsCalc($championIds)
- * @method static Builder|SummonerMatch filters($filters)
+ * @method static Builder|SummonerMatch filters(\App\Data\FiltersData $filters)
  * @method static Builder|SummonerMatch newModelQuery()
  * @method static Builder|SummonerMatch newQuery()
  * @method static Builder|SummonerMatch query()
@@ -70,8 +70,6 @@ use Illuminate\Support\Facades\DB;
  */
 class SummonerMatch extends Model
 {
-    use HasFactory;
-
     //public $appends = ['cs_per_minute'];
 
     public $timestamps = false;

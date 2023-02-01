@@ -47,7 +47,6 @@ use Illuminate\Support\Facades\DB;
  */
 class Summoner extends Model
 {
-    use HasFactory;
 
     protected $fillable = [
         'name',

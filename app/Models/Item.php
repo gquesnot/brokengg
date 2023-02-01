@@ -15,8 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $description
  * @property array $tags
  * @property int $gold
- * @property \Spatie\LaravelData\Contracts\BaseData|null $stats
- * @property \Spatie\LaravelData\Contracts\BaseData|null|null $mythic_stats
+ * @property ItemStats $stats
+ * @property ItemMythicStats|null $mythic_stats
  * @property string $colloq
  * @property string $img_url
  * @property string|null $type
@@ -37,7 +37,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Item extends Model
 {
-    use HasFactory;
 
     public $timestamps = false;
 
