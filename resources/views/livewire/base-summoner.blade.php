@@ -106,7 +106,7 @@
                                          wire:key="encounters_{{$filters->toJson()}}"
                                          :filters="$filters"/>
                 @elseif($tab ==  \App\Enums\TabEnum::LIVE_GAME)
-                    <livewire:live-game :version="$version" :me="$summoner->id"
+                    <livewire:live-game :version="$version" :me="$summoner"
                                         wire:key="live_game_{{$filters->toJson()}}"/>
                 @elseif($tab ==  \App\Enums\TabEnum::VERSUS)
                     <livewire:summoner-versus :me="$summoner" :other="$otherSummonerId"

@@ -12,6 +12,7 @@
         "laravel/jetstream": "^2.12",
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
+        "laravel/vapor-core": "^2.28",
         "laravie/parser": "2.0",
         "livewire/livewire": "^2.5",
         "masterminds/html5": "^2.7",

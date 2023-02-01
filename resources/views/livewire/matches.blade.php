@@ -16,7 +16,7 @@
 		</div>
 	</div>
 	<div class="flex flex-col"
-{{--         wire:poll.visible.5s--}}
+         wire:poll.visible.5s
     >
 		@foreach($matches as $match)
 			<x-match-row :match="$match" :version="$version" :me="$me" ></x-match-row>

@@ -18,7 +18,7 @@ class LiveGame extends Component
 {
     use PaginateTrait;
 
-    public $me;
+    public Summoner $me;
 
     public $info;
 
@@ -64,8 +64,7 @@ class LiveGame extends Component
             return;
         }
         $this->participants = collect($data->participants);
-        $encountersMatchIds = $this->me->getCachedMatchesQuery([]);
-        $encounters = $this->me->getCachedEncounters($encountersMatchIds, []);
+        $encounters = $this->me->getMatchesCache(FiltersData::from([]))['encounters'];
         $this->participants = $this->participants->map(function ($participant) use ($encounters) {
             $participant->total = 0;
             $summoner = Summoner::where('summoner_id', $participant->summonerId)->first();
@@ -104,8 +103,7 @@ class LiveGame extends Component
             return;
         }
         $riotApi = new \App\Helpers\RiotApi();
-        $encountersMatchIds = $this->me->getCachedMatchesQuery(FiltersData::from([]));
-        $encounters = $this->me->getCachedEncounters($encountersMatchIds, FiltersData::from([]));
+        $encounters = $this->me->getMatchesCache(FiltersData::from([]))['encounters'];
         $this->lobbyParticipants = collect(explode("\n", $this->search))->map(function ($name) use ($encounters, $riotApi) {
             if (str_contains($name, 'joined the lobby')) {
                 $name = str_replace(' joined the lobby', '', $name);
