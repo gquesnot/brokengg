@@ -59,7 +59,7 @@ class Item extends Model
         'mythic_stats' => ItemMythicStats::class,
     ];
 
-    static function url(string $version, int $itemId): string{
-        return "https://ddragon.leagueoflegends.com/cdn/{$version}/img/item/{$itemId}.png";
+    static function url(string $version, string $url): string{
+        return "https://ddragon.leagueoflegends.com/cdn/{$version}/img/item/{$url}";
     }
 }

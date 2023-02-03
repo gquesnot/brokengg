@@ -2,7 +2,7 @@
 	<div @class(["border shadow flex p-2 my-1", "bg-red-200" => $participant['vs'], "bg-blue-200" => !$participant['vs']])>
 		<div>
 			<img
-				src="{{Champion::url($version, $participant['champion']['img_url'])}}"
+				src="{{App\Models\Champion::url($version, $participant['champion']['img_url'])}}"
 				@class(["w-6 h-6" => true, 'rounded-full' => $participant['summonerId'] == $me['summoner_id']  , 'rounded' => $participant['summonerId'] != $me['summoner_id']])>
 		</div>
 		<div class="font-medium text-xl mx-2">

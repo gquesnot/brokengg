@@ -64,7 +64,7 @@ class Matches extends Component
             ->with('champion:id,name,img_url')
             ->with('match:id,match_duration,mode_id,queue_id,match_creation,match_end')
             ->with('match.mode:id,name')
-            ->with('queue:id,description')
+            ->with('match.queue:id,description')
             ->with('match.participants:id,summoner_id,won,champion_id')
             ->with('match.participants.champion:id,name,img_url')
             ->with('match.participants.summoner:id,name')

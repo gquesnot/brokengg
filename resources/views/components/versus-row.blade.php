@@ -19,7 +19,7 @@
         <div class="flex flex-col text-center items-center">
             <div class="relative flex justify-center items-center mr-4">
                 <img alt="{{$detail->me->champion->name}}"
-                     src="{{Champion::url($version, $detail->me->champion->img_url)}}"
+                     src="{{App\Models\Champion::url($version, $detail->me->champion->img_url)}}"
                      class="w-16 h-16 rounded-full">
             </div>
             <div>{{$detail->me->champion->name}}</div>
@@ -60,7 +60,7 @@
 
             <div class="relative flex justify-center items-center ml-4">
                 <img alt="{{$detail->other->champion->name}}"
-                     src="{{Champion::url($version,$detail->other->champion->img_url)}}"
+                     src="{{App\Models\Champion::url($version,$detail->other->champion->img_url)}}"
                      class="w-16 h-16 rounded-full">
             </div>
             <div>{{$detail->other->champion->name}}</div>

@@ -54,7 +54,7 @@ class Champion extends Model
 
 
     static function url(string $version, string $url){
-        return "https://ddragon.leagueoflegends.com/cdn/{{$version}}/img/champion/{{$url}}";
+        return "https://ddragon.leagueoflegends.com/cdn/{$version}/img/champion/{$url}";
     }
 
     public function matches(): HasMany
