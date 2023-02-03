@@ -186,11 +186,12 @@ class Summoner extends Model
 
     public function getMatchesQuery( FiltersData$filters){
         $query=  SummonerMatch::whereSummonerId($this->id);
+
         if ($filters->champion){
             $query->whereChampionId($filters->champion);
         }
         $matchIds = $query->toBase()->pluck('match_id')->toArray();
-        return Matche::whereIn('id', $matchIds)->filters($filters)->orderByDesc('match_creation')->toBase();
+        return Matche::whereIn('id', $matchIds)->whereUpdated(true)->filters($filters)->orderByDesc('match_creation')->toBase();
     }
 
     public function champions()
