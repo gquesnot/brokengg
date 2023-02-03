@@ -17,7 +17,7 @@
         "livewire/livewire": "^2.5",
         "masterminds/html5": "^2.7",
         "nyholm/psr7": "^1.5",
-        "predis/predis": "^2.0",
+        "predis/predis": "^2.1",
         "simivar/riot-php": "^1.0",
         "spatie/laravel-data": "^2.0",
         "spatie/laravel-typescript-transformer": "^2.1",
