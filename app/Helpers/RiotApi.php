@@ -16,7 +16,6 @@ use App\Models\SummonerMatch;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -198,7 +197,7 @@ class RiotApi
     public function updateMatch(Matche $match): bool
     {
         $data = $this->retryFn(fn () => $this->getMatchDetail($match->match_id));
-        if (!isset($data->info)){
+        if (! isset($data->info)) {
             dd($data);
         }
         $info = $data->info;
@@ -276,8 +275,12 @@ class RiotApi
             $items = [];
             for ($i = 0; $i < 6; $i++) {
                 $item = $participant->{'item'.$i};
-                if($item == 0) continue;
-                if (!Item::where('id', $item)->exists()) continue;
+                if ($item == 0) {
+                    continue;
+                }
+                if (! Item::where('id', $item)->exists()) {
+                    continue;
+                }
                 $items[] = [
                     'summoner_match_id' => $sm->id,
                     'item_id' => $item,
@@ -327,8 +330,8 @@ class RiotApi
 
     public function waitApiOk(): bool
     {
-
         sleep(150);
+
         return true;
     }
 
@@ -344,8 +347,10 @@ class RiotApi
             if ($json != null) {
                 if (isset($json->status) && $json->status->status_code == 429) {
                     $this->waitApiOk();
+
                     return $this->doGetWithRetry($url, $params);
                 }
+
                 return $json;
             } else {
                 echo 'error '.PHP_EOL;
@@ -372,6 +377,7 @@ class RiotApi
         if ($queueId) {
             $params['queue'] = $queueId;
         }
+
         return $this->doGetWithRetry($url, $params);
     }
 

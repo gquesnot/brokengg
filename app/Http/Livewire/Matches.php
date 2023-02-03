@@ -4,7 +4,6 @@ namespace App\Http\Livewire;
 
 use App\Data\FiltersData;
 use App\Helpers\Stats;
-use App\Models\Matche;
 use App\Models\Summoner;
 use App\Models\SummonerMatch;
 use App\Traits\PaginateTrait;
@@ -27,13 +26,11 @@ class Matches extends Component
 
     public function mount(Summoner $me, $version, FiltersData $filters)
     {
-
         $this->fill([
             'me' => $me,
             'version' => $version,
             'filters' => $filters,
         ]);
-
     }
 
     public function showVersus($id)
@@ -91,6 +88,7 @@ class Matches extends Component
     {
         return Cache::remember($this->me->getCacheKey('stats_view', $this->filters, $count), 60 * 5, function () {
             $matches_data = $this->me->getMatchesCache($this->filters);
+
             return new Stats(
                 SummonerMatch::whereIn('match_id', $matches_data['match_ids'])
                     ->whereSummonerId($this->me->id)
@@ -108,15 +106,14 @@ class Matches extends Component
                     ])->toBase()->get()
             );
         });
-
     }
-
 
     public function render()
     {
         $count = $this->me->getMatchesCount($this->filters);
         $matches = $this->getMatches($count);
         $paginator = new LengthAwarePaginator($matches, $count, $this->perPage, $this->page);
+
         return view('livewire.matches', [
             'matches' => $paginator,
             'stats' => $this->getStats($count),

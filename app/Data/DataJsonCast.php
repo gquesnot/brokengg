@@ -3,7 +3,6 @@
 namespace App\Data;
 
 use App\Casts\CastableJsonData;
-use App\Traits\WireableData;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Spatie\LaravelData\Data;
 

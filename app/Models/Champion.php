@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Data\champion\ChampionData;
 use App\Data\champion\ChampionStats;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\LaravelData\WithData;
@@ -20,6 +19,7 @@ use Spatie\LaravelData\WithData;
  * @property ChampionStats $stats
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Champion newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Champion newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Champion query()
@@ -29,6 +29,7 @@ use Spatie\LaravelData\WithData;
  * @method static \Illuminate\Database\Eloquent\Builder|Champion whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Champion whereStats($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Champion whereTitle($value)
+ *
  * @mixin \Eloquent
  */
 class Champion extends Model
@@ -52,8 +53,8 @@ class Champion extends Model
         'stats' => ChampionStats::class,
     ];
 
-
-    static function url(string $version, string $url){
+    public static function url(string $version, string $url)
+    {
         return "https://ddragon.leagueoflegends.com/cdn/{$version}/img/champion/{$url}";
     }
 

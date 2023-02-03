@@ -41,7 +41,6 @@ class Encounters extends Component
             $encounters = $encounters->filter(function ($total, $key) use ($summonerIds) {
                 return $summonerIds->contains($key);
             });
-
         }
         $encounters = $encounters->sortBy(fn ($summoner) => $summoner, SORT_REGULAR, true);
         $encountersPaginate = $encounters->forPage($this->page, $this->perPage);

@@ -8,7 +8,6 @@ use App\Models\Matche;
 use App\Models\Queue;
 use App\Models\Summoner;
 use App\Models\SummonerMatch;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Session;
@@ -18,7 +17,6 @@ class Filter extends Component
     public FiltersData $filters;
 
     public array $options;
-
 
     public Summoner $summoner;
 
@@ -82,7 +80,6 @@ class Filter extends Component
         $this->resetErrorBag();
         if ($update) {
             $this->emitTo(BaseSummoner::class, 'updateFilters', $this->filters->toArray());
-
         }
 
         Session::flash('success', 'Filters cleared');

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -11,12 +10,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $item_id
  * @property int $summoner_match_id
  * @property int $position
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch query()
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch whereItemId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch wherePosition($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ItemSummonerMatch whereSummonerMatchId($value)
+ *
  * @mixin \Eloquent
  */
 class ItemSummonerMatch extends Model

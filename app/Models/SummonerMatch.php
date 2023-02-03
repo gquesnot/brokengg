@@ -6,9 +6,7 @@ use App\Data\FiltersData;
 use App\Data\match_timeline\PerksData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +39,7 @@ use Illuminate\Support\Facades\DB;
  * @property-read int|null $items_count
  * @property-read \App\Models\Matche|null $match
  * @property-read \App\Models\Summoner|null $summoner
+ *
  * @method static Builder|SummonerMatch championsCalc($championIds)
  * @method static Builder|SummonerMatch filters(\App\Data\FiltersData $filters)
  * @method static Builder|SummonerMatch newModelQuery()
@@ -66,6 +65,7 @@ use Illuminate\Support\Facades\DB;
  * @method static Builder|SummonerMatch whereSummonerId($value)
  * @method static Builder|SummonerMatch whereTripleKills($value)
  * @method static Builder|SummonerMatch whereWon($value)
+ *
  * @mixin \Eloquent
  */
 class SummonerMatch extends Model
@@ -133,6 +133,7 @@ class SummonerMatch extends Model
 
             get: function () {
                 $avg_death = $this->avg_deaths == 0 ? 1 : $this->avg_deaths;
+
                 return round(($this->avg_kills + $this->avg_assists) / $avg_death, 2);
             }
         );

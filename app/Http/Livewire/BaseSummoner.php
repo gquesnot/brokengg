@@ -43,11 +43,14 @@ class BaseSummoner extends Component
 
     protected $listeners = ['updateFilters', 'flashMessage'];
 
-
     public ?string $date_start = null;
+
     public ?string $date_end = null;
+
     public ?int $champion = null;
+
     public ?int $queue = null;
+
     public ?bool $filter_encounters = null;
 
     protected $queryString = [
@@ -57,7 +60,6 @@ class BaseSummoner extends Component
         'queue',
         'filter_encounters',
     ];
-
 
     public function mount(int $summonerId, ?int $otherSummonerId = null, ?int $matchId = null)
     {
@@ -76,10 +78,10 @@ class BaseSummoner extends Component
         // TODO: check user has all account_apis
         $this->version = Version::orderByDesc('id')->first()->name;
         $this->summoner = SummonerModel::find($summonerId);
-        if (!$this->summoner) {
+        if (! $this->summoner) {
             return redirect()->route('home');
         }
-        if (!$this->summoner->complete) {
+        if (! $this->summoner->complete) {
             $riotApi = new RiotApi();
             $summoner = $riotApi->getAndUpdateSummonerByName($this->summoner->name);
         }
@@ -93,10 +95,9 @@ class BaseSummoner extends Component
 
     public function toggleAutoUpdate()
     {
-        $this->summoner->auto_update = !$this->summoner->auto_update;
+        $this->summoner->auto_update = ! $this->summoner->auto_update;
         $this->summoner->save();
     }
-
 
     public function updateFilters($filters)
     {
@@ -138,6 +139,6 @@ class BaseSummoner extends Component
 
     public function render()
     {
-        return view('livewire.base-summoner', ["filters" => FiltersData::fromLivewire($this->filters ?? [])]);
+        return view('livewire.base-summoner', ['filters' => FiltersData::fromLivewire($this->filters ?? [])]);
     }
 }

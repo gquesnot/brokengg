@@ -29,7 +29,8 @@ class MatchDetail extends Component
         ]);
     }
 
-    public function afterInit(){
+    public function afterInit()
+    {
         $this->readyToLoad = true;
     }
 
@@ -49,10 +50,10 @@ class MatchDetail extends Component
 
     public function render()
     {
-        $participants =collect([]);
+        $participants = collect([]);
         $participant_idx = 0;
-        $items =collect([]);
-        if ($this->readyToLoad){
+        $items = collect([]);
+        if ($this->readyToLoad) {
             $api = new RiotApi();
             $participants = $api->getCachedMatchTimeline($this->match);
             $participant_idx = $participants->first(function ($participant) {
@@ -60,7 +61,6 @@ class MatchDetail extends Component
             })->id;
             $items = $this->getItems();
         }
-
 
         return view('livewire.match-detail', [
             'participants' => $participants->toArray(),

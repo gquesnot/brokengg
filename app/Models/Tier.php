@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -12,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $name
  * @property int $position
  * @property string|null $img_url
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Tier newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Tier newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Tier query()
@@ -19,11 +19,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Tier whereImgUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tier whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Tier wherePosition($value)
+ *
  * @mixin \Eloquent
  */
 class Tier extends Model
 {
-
     public $timestamps = false;
 
     protected $fillable = [

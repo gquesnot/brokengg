@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Data\item\ItemMythicStats;
 use App\Data\item\ItemStats;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -20,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $colloq
  * @property string $img_url
  * @property string|null $type
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Item newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Item newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Item query()
@@ -33,11 +33,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Item whereStats($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Item whereTags($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Item whereType($value)
+ *
  * @mixin \Eloquent
  */
 class Item extends Model
 {
-
     public $timestamps = false;
 
     protected $fillable = ['name',
@@ -59,7 +59,8 @@ class Item extends Model
         'mythic_stats' => ItemMythicStats::class,
     ];
 
-    static function url(string $version, string $url): string{
+    public static function url(string $version, string $url): string
+    {
         return "https://ddragon.leagueoflegends.com/cdn/{$version}/img/item/{$url}";
     }
 }

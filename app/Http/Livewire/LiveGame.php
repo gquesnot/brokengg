@@ -56,8 +56,7 @@ class LiveGame extends Component
             if ($status == 404) {
                 $this->loaded = false;
             }
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             $this->loaded = true;
         }
         if (! $this->loaded) {

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Data\FiltersData;
-use App\Data\match_timeline\ParticipantData;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $participants
  * @property-read int|null $participants_count
  * @property-read \App\Models\Queue|null $queue
+ *
  * @method static Builder|Matche filters(?\App\Data\FiltersData $filters)
  * @method static Builder|Matche newModelQuery()
  * @method static Builder|Matche newQuery()
@@ -42,11 +42,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder|Matche whereQueueId($value)
  * @method static Builder|Matche whereUpdated($value)
  * @method static Builder|Matche whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Matche extends Model
 {
-
     protected $fillable = [
         'match_id',
         'mode_id',
@@ -57,14 +57,14 @@ class Matche extends Model
         'match_duration',
     ];
 
-
     public $dates = [
         'match_creation',
         'match_end',
         'match_duration',
     ];
 
-    public function sinceMatchEnd(){
+    public function sinceMatchEnd()
+    {
         return $this->match_end->diffForHumans(Carbon::now());
     }
 

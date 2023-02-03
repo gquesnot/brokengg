@@ -38,18 +38,19 @@ class ParticipantData extends Data
 
         $frames = collect($match_timeline['frames'])->map(function ($frame) use ($index, $destroyed, $undo, $sold) {
             $participant_frame = collect($frame['participantFrames'])->firstWhere('participantId', $index);
-            $events = collect($frame['events'])->filter(function ($event) use ($index, $destroyed, $undo, $sold) {
+            $events = collect($frame['events'])->filter(function ($event) use ($index) {
                 return Arr::get($event, 'participantId', 0) == $index && Str::contains($event['type'], 'ITEM');
             })->map(function ($event) use ($destroyed, $undo, $sold) {
-                if ($event['type'] == "ITEM_DESTROYED"){
+                if ($event['type'] == 'ITEM_DESTROYED') {
                     $destroyed->push($event);
                 }
-                if ($event['type'] == "ITEM_UNDO"){
+                if ($event['type'] == 'ITEM_UNDO') {
                     $undo->push($event);
                 }
-                if ($event['type'] == "ITEM_SOLD"){
+                if ($event['type'] == 'ITEM_SOLD') {
                     $sold->push($event);
                 }
+
                 return ShopEventData::from(
                     [
                         'type' => $event['type'],
