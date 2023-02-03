@@ -26,4 +26,9 @@ class Queue extends Model
 
     protected $fillable = ['id', 'map',
         'description', ];
+
+
+    public function name(){
+        return str_replace('Pick', '', str_replace(' games', '', $this->description));
+    }
 }

@@ -10,7 +10,7 @@
         </div>
     </div>
     <div class="flex flex-col text-center">
-        <div class="font-medium">{{$detail->queue->name}}</div>
+        <div class="font-medium">{{$detail->queue->name()}}</div>
         <div @class(["text-blue-600" => $detail->me->won , "text-red-600"=>!$detail->me->won, "text-center"])>{{$detail->me->won ? "won" : "lose"}}</div>
         <div>{{$detail->match_duration->format('H:i:s')}}</div>
     </div>

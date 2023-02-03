@@ -1,7 +1,7 @@
 <div @class(["bg-blue-200" => $match->won , "bg-red-200"=> !$match->won, "flex my-2 p-2"])>
 	<div class="flex relative mx-2 items-center w-1/6">
 		<div class="flex flex-col text-center w-2/3">
-			<div class="font-medium">{{$match->match->queue->name}}</div>
+			<div class="font-medium">{{$match->match->queue->name()}}</div>
 			<div>{{$match->match->sinceMatchEnd()}}</div>
 			<div @class(["text-blue-600" => $match->won , "text-red-600"=>!$match->won, "text-center"])>{{$match->won ? "won" : "lose"}}</div>
 			<div>{{$match->match->match_duration->format('H:i:s')}}</div>
