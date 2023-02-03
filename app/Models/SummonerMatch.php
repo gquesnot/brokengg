@@ -130,7 +130,11 @@ class SummonerMatch extends Model
     public function avgKda(): Attribute
     {
         return Attribute::make(
-            get: fn () => round(($this->avg_kills + $this->avg_assists) / $this->avg_deaths, 2),
+
+            get: function () {
+                $avg_death = $this->avg_deaths == 0 ? 1 : $this->avg_deaths;
+                return round(($this->avg_kills + $this->avg_assists) / $avg_death, 2);
+            }
         );
     }
 
