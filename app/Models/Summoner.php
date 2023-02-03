@@ -72,7 +72,7 @@ class Summoner extends Model
             $matches_ids = $this->getMatchesQuery($filters)
                 ->pluck('id');
             if (!$filters->filter_encounters) {
-                $match_encounter_ids = SummonerMatch::whereSummonerId($this->id)->pluck('match_id');
+                $match_encounter_ids = SummonerMatch::whereSummonerId($this->id)->toBase()->pluck('match_id');
             }
             else{
                 $match_encounter_ids = $matches_ids;
@@ -115,7 +115,7 @@ class Summoner extends Model
         if ($limit != null) {
             $query = $query->limit($limit);
         }
-        return $query->pluck('match_id');
+        return $query->toBase()->pluck('match_id');
     }
 
 
@@ -126,7 +126,7 @@ class Summoner extends Model
             ->selectRaw('summoner_id, count(*) as total')
             ->groupBy('summoner_id')
             ->orderByDesc('total')
-            ->get();
+            ->toBase();
     }
 
     public function getVersusMatchIds($meId, $otherId, $limit)
@@ -184,13 +184,13 @@ class Summoner extends Model
             ->count();
     }
 
-    public function getMatchesQuery( FiltersData$filters): Builder{
+    public function getMatchesQuery( FiltersData$filters){
         $query=  SummonerMatch::whereSummonerId($this->id);
         if ($filters->champion){
             $query->whereChampionId($filters->champion);
         }
         $matchIds = $query->toBase()->pluck('match_id')->toArray();
-        return Matche::whereIn('id', $matchIds)->filters($filters)->orderByDesc('match_creation');
+        return Matche::whereIn('id', $matchIds)->filters($filters)->orderByDesc('match_creation')->toBase();
     }
 
     public function champions()
