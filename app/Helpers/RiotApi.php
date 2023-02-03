@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Data\match_timeline\ParticipantData;
 use App\Data\match_timeline\PerksData;
 use App\Models\Champion;
+use App\Models\Item;
 use App\Models\ItemSummonerMatch;
 use App\Models\Map;
 use App\Models\Matche;
@@ -276,6 +277,7 @@ class RiotApi
             for ($i = 0; $i < 6; $i++) {
                 $item = $participant->{'item'.$i};
                 if($item == 0) continue;
+                if (!Item::where('id', $item)->exists()) continue;
                 $items[] = [
                     'summoner_match_id' => $sm->id,
                     'item_id' => $item,
