@@ -11,7 +11,7 @@
 		<div class="flex flex-col text-center w-1/3">
 			<div class="relative flex justify-center items-center ml-4">
 				<img
-					src="http://ddragon.leagueoflegends.com/cdn/{{$version}}/img/champion/{{$match->champion->img_url}}"
+					src="https://ddragon.leagueoflegends.com/cdn/{{$version}}/img/champion/{{$match->champion->img_url}}"
 					alt="{{$match->champion->name}}"
 					class="w-16 h-16 rounded-full">
 			</div>
@@ -39,7 +39,7 @@
 			<div class="w-1/3">
 				<div class="relative ml-4">
 					<img alt="{{$item->name}}"
-					     src="http://ddragon.leagueoflegends.com/cdn/{{$version}}/img/item/{{$item->img_url}}"
+					     src="https://ddragon.leagueoflegends.com/cdn/{{$version}}/img/item/{{$item->img_url}}"
 					     class="w-8 h-8 rounded">
 				</div>
 			</div>

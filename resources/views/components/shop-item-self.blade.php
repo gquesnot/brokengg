@@ -13,6 +13,6 @@
         <img alt=""
              class=" rounded border-b-1 cursor-pointer z-20"
              style="max-width: 50px; max-height: 50px; object-fit: cover; object-position: center"
-             :src="'http://ddragon.leagueoflegends.com/cdn/'+lol.version+'/img/item/'+item.id +'.png'"/>
+             :src="'https://ddragon.leagueoflegends.com/cdn/'+lol.version+'/img/item/'+item.id +'.png'"/>
     </div>
 </div>

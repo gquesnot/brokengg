@@ -1,7 +1,7 @@
 <tr class="text-center">
 	<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 flex">
 		<img
-			src="http://ddragon.leagueoflegends.com/cdn/{{$version}}/img/champion/{{$champion->champion->img_url}}" alt="{{$champion->champion->name}}"
+			src="https://ddragon.leagueoflegends.com/cdn/{{$version}}/img/champion/{{$champion->champion->img_url}}" alt="{{$champion->champion->name}}"
 			class="w-6 h-6 rounded-full mr-2"/>
 		{{$champion->champion->name}}
 	</td>

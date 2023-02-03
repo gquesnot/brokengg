@@ -54,7 +54,7 @@
                         <template x-for="(enemy_participant, idx) in lol.enemy_participants" :key="idx">
                             <tr :class=" idx %2 === 0  ?'bg-white' : 'bg-gray-100'">
                                 <td class=" py-2 whitespace-nowrap text-sm font-medium text-gray-900 flex justify-center content-center" >
-                                    <img :src="'http://ddragon.leagueoflegends.com/cdn/' + lol.version+'/img/champion/' + enemy_participant.champion.name + '.png'"
+                                    <img :src="'https://ddragon.leagueoflegends.com/cdn/' + lol.version+'/img/champion/' + enemy_participant.champion.name + '.png'"
                                          class="h-10 w-10 rounded-full" alt="">
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
