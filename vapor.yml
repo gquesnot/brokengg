@@ -1,7 +1,0 @@
-id: 41919
-name: brokengg
-environments:
-  production:
-    memory: 1024
-    cli-memory: 512
-    runtime: 'php-8.2:al2'
