@@ -8,7 +8,7 @@
 <div {{ $attributes->class([' text-center flex my-4']) }}>
 	<div class=" flex justify-around w-1/2 mr-2">
 		<div
-			class=" flex flex-col items-center font-medium flex justify-center items-center mx-2">champions
+			class=" flex flex-col items-center font-medium flex justify-center items-center mx-2">
 			<div class="font-bold flex items-center">
 				<span class="mx-2">{{$stats['me']->avg_kills}}</span>/<span
 					class="mx-2 text-red-600">{{$stats['me']->avg_deaths}}</span>/<span
