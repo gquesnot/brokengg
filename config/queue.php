@@ -65,7 +65,7 @@ return [
 
         'redis' => [
             'driver' => 'redis',
-            'connection' => 'default',
+            'connection' => 'redis',
             'queue' => env('REDIS_QUEUE', 'default'),
             'retry_after' => 120,
             'block_for' => 0,
