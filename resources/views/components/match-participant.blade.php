@@ -1,6 +1,6 @@
 <div @class(["flex my-0.5" , "w-16"=>$won])>
 	<img
-		src="https://ddragon.leagueoflegends.com/cdn/{{$version}}/img/champion/{{$participant->champion->img_url}}"
+		src="{{Champion::url($version, $participant->champion->img_url)}}"
 		alt="{{$participant->champion->name}}"
 		@class(["w-6 h-6" => true, 'rounded-full' => $participant->id == $match->id  , 'rounded' => $participant->id != $match->id])/>
 

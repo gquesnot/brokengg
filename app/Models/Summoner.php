@@ -149,8 +149,8 @@ class Summoner extends Model
 
         $matches = Matche::whereIn('id', $versusMatchIds)
             ->filters($filters)
-            ->select(['id', 'match_creation', 'match_duration', 'match_id', 'map_id', 'mode_id', 'match_end'])
-            ->with('participants.champion:id,name,img_url', 'mode:id,name')
+            ->select(['id', 'match_creation', 'match_duration', 'match_id', 'map_id', 'mode_id', 'match_end', 'queue_id'])
+            ->with('participants.champion:id,name,img_url', 'mode:id,name', 'queue:id,name')
             ->withWhereHas('participants', function ($query) use ($meId, $otherId) {
                 $query->where('summoner_id', $meId)->orWhere('summoner_id', $otherId);
             })

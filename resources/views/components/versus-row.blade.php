@@ -10,7 +10,7 @@
         </div>
     </div>
     <div class="flex flex-col text-center">
-        <div class="font-medium">{{$detail->mode->name}}</div>
+        <div class="font-medium">{{$detail->queue->name}}</div>
         <div @class(["text-blue-600" => $detail->me->won , "text-red-600"=>!$detail->me->won, "text-center"])>{{$detail->me->won ? "won" : "lose"}}</div>
         <div>{{$detail->match_duration->format('H:i:s')}}</div>
     </div>
@@ -19,7 +19,7 @@
         <div class="flex flex-col text-center items-center">
             <div class="relative flex justify-center items-center mr-4">
                 <img alt="{{$detail->me->champion->name}}"
-                     src="https://ddragon.leagueoflegends.com/cdn/{{$version}}/img/champion/{{$detail->me->champion->img_url}}"
+                     src="{{Champion::url($version, $detail->me->champion->img_url)}}"
                      class="w-16 h-16 rounded-full">
             </div>
             <div>{{$detail->me->champion->name}}</div>
@@ -60,7 +60,7 @@
 
             <div class="relative flex justify-center items-center ml-4">
                 <img alt="{{$detail->other->champion->name}}"
-                     src="https://ddragon.leagueoflegends.com/cdn/{{$version}}/img/champion/{{$detail->other->champion->img_url}}"
+                     src="{{Champion::url($version,$detail->other->champion->img_url)}}"
                      class="w-16 h-16 rounded-full">
             </div>
             <div>{{$detail->other->champion->name}}</div>

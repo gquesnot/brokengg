@@ -52,6 +52,11 @@ class Champion extends Model
         'stats' => ChampionStats::class,
     ];
 
+
+    static function url(string $version, string $url){
+        return "https://ddragon.leagueoflegends.com/cdn/{{$version}}/img/champion/{{$url}}";
+    }
+
     public function matches(): HasMany
     {
         return $this->hasMany(SummonerMatch::class, 'champion_id', 'id');
