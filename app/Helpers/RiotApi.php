@@ -271,9 +271,11 @@ class RiotApi
                 $summonerMatchParams['kill_participation'] = round($summonerMatchParams['kill_participation'] / $allKills, 2);
             }
             $sm = SummonerMatch::create($summonerMatchParams);
+
             $items = [];
             for ($i = 0; $i < 6; $i++) {
                 $item = $participant->{'item'.$i};
+                if($item == 0) continue;
                 $items[] = [
                     'summoner_match_id' => $sm->id,
                     'item_id' => $item,
