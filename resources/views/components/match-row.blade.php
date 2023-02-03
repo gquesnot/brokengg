@@ -45,8 +45,8 @@
 			</div>
 		@endforeach
 	</div>
-	<div class="flex mx-4 min-w-fit">
-		<div class="flex flex-col w-1/2 pr-10 mr-16">
+	<div class="flex mx-4 w-1/3">
+		<div class="flex flex-col w-1/2">
 			@foreach($match->match->participants as $participant)
 				@if($match->won == $participant->won)
 					<x-match-participant :participant="$participant" :me="$me" :version="$version" :match="$match" :won="$participant->won"/>
