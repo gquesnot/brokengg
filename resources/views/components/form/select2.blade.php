@@ -1,4 +1,4 @@
-<div wire:ignore>
+<div wire:ignore x-cloak>
 	@php
 		$model_id = "select2-".str_replace('.', '-', $model);
 	@endphp
