@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\DB;
  * @property int $triple_kills
  * @property int $quadra_kills
  * @property int $penta_kills
- * @property PerksData $perks
+ * @property \Spatie\LaravelData\Contracts\BaseData|null $perks
  * @property-read \App\Models\Champion|null $champion
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Item[] $items
  * @property-read int|null $items_count

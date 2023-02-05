@@ -85,17 +85,17 @@ class Matche extends Model
         return $query;
     }
 
-    public function participants()
+    public function participants(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(SummonerMatch::class, 'match_id', 'id');
     }
 
-    public function mode()
+    public function mode(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Mode::class, 'id', 'mode_id');
     }
 
-    public function queue()
+    public function queue(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Queue::class, 'id', 'queue_id');
     }

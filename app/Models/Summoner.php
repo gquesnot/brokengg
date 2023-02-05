@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Data\FiltersData;
+use App\Traits\SummonerApi;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
@@ -48,6 +49,8 @@ use Illuminate\Support\Facades\DB;
  */
 class Summoner extends Model
 {
+    use SummonerApi;
+
     protected $fillable = [
         'name',
         'profile_icon_id',
@@ -196,24 +199,27 @@ class Summoner extends Model
         return Matche::whereIn('id', $matchIds)->whereUpdated(true)->filters($filters)->orderByDesc('match_creation')->toBase();
     }
 
-    public function champions()
+    public function champions(): Builder
     {
         return Champion::with(['matches' => function ($query) {
             $query->where('summoner_id', $this->id);
         }], 'matches.match');
     }
 
-    public function champion($championId)
+    public function champion($championId): Champion
     {
         return Champion::where('id', $championId)->with(['matches' => function ($query) {
             $query->where('summoner_id', $this->id);
         }])->first();
     }
 
-    public function matches()
+    public function matches(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(SummonerMatch::class, 'summoner_id', 'id')->with([
-            'champion', 'match', 'match.mode', 'match.queue', 'match.map', 'items', 'match.participants', 'match.participants.champion', 'match.participants.summoner',
-        ]);
+        return $this->hasMany(SummonerMatch::class, 'summoner_id', 'id');
+    }
+
+    public function leagues(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SummonerLeague::class, 'summoner_id', 'id');
     }
 }

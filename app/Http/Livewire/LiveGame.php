@@ -4,13 +4,9 @@ namespace App\Http\Livewire;
 
 use App\Data\FiltersData;
 use App\Models\Champion as ChampionModel;
-use App\Models\Map;
-use App\Models\Mode;
-use App\Models\Queue;
 use App\Models\Summoner;
 use App\Models\Summoner as SummonerModel;
 use App\Traits\PaginateTrait;
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
@@ -42,41 +38,33 @@ class LiveGame extends Component
             'me' => $me,
             'version' => $version,
         ]);
-        $this->getLiveGame();
+        $this->loadLiveGame();
     }
 
-    public function getLiveGame()
+    public function loadLiveGame()
     {
-        $riotApi = new \App\Helpers\RiotApi();
-        $data = $riotApi->getSummonerLiveGame($this->me);
+        $live_game_data = $this->me->getLiveGame();
+        if ($live_game_data == null) {
+            $this->loaded = false;
 
-        $this->loaded = $data != null;
-        try {
-            $status = $data->status->status_code;
-            if ($status == 404) {
-                $this->loaded = false;
-            }
-        } catch (\Exception $e) {
-            $this->loaded = true;
-        }
-        if (! $this->loaded) {
             return;
         }
-        $this->participants = collect($data->participants);
+
+        $this->participants = collect($live_game_data['participants']);
         $encounters = $this->me->getMatchesCache(FiltersData::from([]))['encounters'];
         $this->participants = $this->participants->map(function ($participant) use ($encounters) {
-            $participant->total = 0;
-            $summoner = Summoner::where('summoner_id', $participant->summonerId)->first();
+            $participant['total'] = 0;
+            $summoner = Summoner::where('summoner_id', $participant['summonerId'])->first();
             if ($summoner) {
                 if ($encounters->has($summoner->id)) {
-                    $participant->total = $encounters->get($summoner->id);
-                    $participant->id = $summoner->id;
+                    $participant['total'] = $encounters->get($summoner->id);
+                    $participant['id'] = $summoner->id;
                 }
             }
 
-            $participant->champion = ChampionModel::where('id', $participant->championId)->first();
-            if ($participant->summonerId == $this->me->summoner_id) {
-                $this->myTeam = $participant->teamId;
+            $participant['champion'] = ChampionModel::where('id', $participant['championId'])->first();
+            if ($participant['summonerId'] == $this->me->summoner_id) {
+                $this->myTeam = $participant['teamId'];
             }
 
             return (array) $participant;
@@ -85,13 +73,9 @@ class LiveGame extends Component
 
             return $participant;
         });
+        $this->loaded = true;
 
-        $this->info = [
-            'queue' => Queue::where('id', $data->gameQueueConfigId)->first(),
-            'map' => Map::where('id', $data->mapId)->first(),
-            'mode' => Mode::where('name', $data->gameMode)->first(),
-            'duration' => Carbon::createFromTimestamp($data->gameStartTime / 1000)->diff(Carbon::now())->format('%H:%I:%S'),
-        ];
+        $this->info = $live_game_data['info'];
     }
 
     public function searchSummoners()
@@ -101,17 +85,13 @@ class LiveGame extends Component
 
             return;
         }
-        $riotApi = new \App\Helpers\RiotApi();
         $encounters = $this->me->getMatchesCache(FiltersData::from([]))['encounters'];
-        $this->lobbyParticipants = collect(explode("\n", $this->search))->map(function ($name) use ($encounters, $riotApi) {
+        $this->lobbyParticipants = collect(explode("\n", $this->search))->map(function ($name) use ($encounters) {
             if (str_contains($name, 'joined the lobby')) {
                 $name = str_replace(' joined the lobby', '', $name);
             }
+            $summoner = SummonerModel::updateOrCreateByName($name);
 
-            $summoner = SummonerModel::where('name', $name)->first();
-            if (! $summoner) {
-                $summoner = $riotApi->getAndUpdateSummonerByName($name);
-            }
             if (! $summoner) {
                 return null;
             }

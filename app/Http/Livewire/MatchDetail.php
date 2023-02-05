@@ -3,7 +3,7 @@
 namespace App\Http\Livewire;
 
 use App\Data\item\ItemData;
-use App\Helpers\RiotApi;
+use App\Http\Clients\RiotApi;
 use App\Models\Item;
 use App\Models\Matche;
 use App\Models\Summoner;

@@ -16,7 +16,7 @@ use Spatie\LaravelData\WithData;
  * @property string $title
  * @property string $img_url
  * @property string $champion_id
- * @property ChampionStats $stats
+ * @property \Spatie\LaravelData\Contracts\BaseData|null|null $stats
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
  *

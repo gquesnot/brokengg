@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Http\Clients;
 
 use Illuminate\Support\Facades\Http;
 

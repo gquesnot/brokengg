@@ -4,8 +4,8 @@ namespace App\Http\Livewire;
 
 use App\Data\FiltersData;
 use App\Enums\FLashEnum;
-use App\Helpers\RiotClientApi;
 use App\Helpers\Stats;
+use App\Http\Clients\RiotClientApi;
 use App\Models\Summoner;
 use App\Traits\PaginateTrait;
 use App\Traits\QueryParamsTrait;

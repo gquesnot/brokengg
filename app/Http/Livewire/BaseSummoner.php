@@ -4,14 +4,11 @@ namespace App\Http\Livewire;
 
 use App\Data\FiltersData;
 use App\Enums\TabEnum;
-use App\Helpers\RiotApi;
 use App\Jobs\UpdateMatchesJob;
-use App\Jobs\UpdateMatchJob;
 use App\Models\Summoner as SummonerModel;
 use App\Models\Version;
 use App\Traits\FlashTrait;
 use App\Traits\QueryParamsTrait;
-use Bus;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use Livewire\Component;
@@ -75,16 +72,12 @@ class BaseSummoner extends Component
             'otherSummonerId' => $otherSummonerId,
             'matchId' => $matchId,
         ]);
-        // TODO: check user has all account_apis
         $this->version = Version::orderByDesc('id')->first()->name;
         $this->summoner = SummonerModel::find($summonerId);
         if (! $this->summoner) {
             return redirect()->route('home');
         }
-        if (! $this->summoner->complete) {
-            $riotApi = new RiotApi();
-            $summoner = $riotApi->getAndUpdateSummonerByName($this->summoner->name);
-        }
+        $this->summoner->selfUpdate();
         $this->tab = TabEnum::from(Route::currentRouteName());
     }
 
@@ -109,15 +102,6 @@ class BaseSummoner extends Component
         $this->filter_encounters = $this->filters->filter_encounters;
     }
 
-    public function loadEncounter($encounterId)
-    {
-        if (in_array($encounterId, $this->summonerToOpen)) {
-            unset($this->summonerToOpen[array_search($encounterId, $this->summonerToOpen)]);
-        } else {
-            $this->summonerToOpen[] = $encounterId;
-        }
-    }
-
     public function fullUpdateSummoner()
     {
         $this->summoner->last_scanned_match = null;
@@ -125,14 +109,13 @@ class BaseSummoner extends Component
         $this->updateSummoner();
     }
 
-    public function updateSummoner()
+    public function updateSummoner(bool $full = false)
     {
-        //UpdateMatchJob::dispatchSync($this->summoner);
-        //UpdateMatchesJob::dispatchSync();
-        Bus::chain([
-            new UpdateMatchJob($this->summoner),
-            new UpdateMatchesJob(),
-        ])->dispatch();
+        if ($full) {
+            $this->summoner->last_scanned_match = null;
+            $this->summoner->save();
+        }
+        UpdateMatchesJob::dispatchSync($this->summoner->id);
 
         Session::flash('success', 'Summoner updating ...');
     }
