@@ -5,12 +5,25 @@
             <div class="flex justify-between">
                 <div>
                     <div class="flex items-center mb-6 my-2">
-                        <div class="flex flex-col  mr-4">
-                            <img
-                                src="https://ddragon.leagueoflegends.com/cdn/{{$version}}/img/profileicon/{{$summoner->profile_icon_id}}.png"
+                        <div class="flex flex-col  mr-4 justify-center">
+                            <div class="flex justify-center">
+                                <img
+                                    src="https://ddragon.leagueoflegends.com/cdn/{{$version}}/img/profileicon/{{$summoner->profile_icon_id}}.png"
 
-                                alt="profile icon" class="w-16 h-16 rounded-full">
-                            <span class="text-center">{{$summoner->summoner_level}}</span>
+                                    alt="profile icon" class="w-16 h-16 rounded-full">
+                            </div>
+
+                            <span class="text-center">Lvl {{$summoner->summoner_level}}</span>
+                            @if($summoner->best_league)
+                                <div class="flex flex-col items-center justify-center">
+{{--                                    <img--}}
+{{--                                        src="{{$summoner->best_league->tier->url()}}"--}}
+{{--                                        alt="tier icon" class="w-32 h-32"/>--}}
+                                    <div>{{$summoner->best_league->tier->name}} {{$summoner->best_league->rank}}</div>
+                                </div>
+
+
+                            @endif
                         </div>
                         <h3 class="text-3xl my-2">{{$summoner->name}}</h3>
                         <div class="flex flex-col mx-4">

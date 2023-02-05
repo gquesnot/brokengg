@@ -65,6 +65,7 @@ class Matches extends Component
             ->with('match.participants:id,summoner_id,won,champion_id')
             ->with('match.participants.champion:id,name,img_url')
             ->with('match.participants.summoner:id,name')
+            ->with('match.participants.summoner.leagues:summoner_id,type,rank,tier')
             ->join('matches', 'matches.id', '=', 'summoner_matches.match_id')
             ->orderBy('matches.match_creation', 'desc')
             ->get();

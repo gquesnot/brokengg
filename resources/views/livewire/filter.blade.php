@@ -47,7 +47,7 @@
             </div>
             <div class="flex items-end my-2 ">
                 <div class="w-60 flex">
-                    <label for="champion" class="block font-medium text-gray-700 ml-2">Filter Encounters </label>
+                    <label for="champion" class="block font-medium text-gray-700 ml-2">Apply filters on encounters </label>
                 </div>
 
                 <div class="">

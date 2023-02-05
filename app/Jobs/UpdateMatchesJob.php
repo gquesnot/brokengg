@@ -23,6 +23,6 @@ class UpdateMatchesJob implements ShouldQueue, ShouldBeUnique
 
     public function handle()
     {
-        Summoner::find($this->summonerId)->updateMatches();
+        Summoner::find($this->summonerId)->updateMatches(true);
     }
 }

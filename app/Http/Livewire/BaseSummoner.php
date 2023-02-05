@@ -75,14 +75,15 @@ class BaseSummoner extends Component
             'matchId' => $matchId,
         ]);
         $this->version = Version::orderByDesc('id')->first()->name;
-        $this->summoner = SummonerModel::find($summonerId);
+        $this->summoner = SummonerModel::with('leagues')->find($summonerId);
         if (! $this->summoner) {
             return redirect()->route('home');
         }
+        $this->summoner->append('best_league');
         try {
             $this->summoner->selfUpdate();
         } catch (RiotApiForbiddenException $e) {
-            Log::error('RiotApiForbiddenException: ' . $e->getMessage());
+            Log::error('RiotApiForbiddenException: '.$e->getMessage());
         }
         $this->tab = TabEnum::from(Route::currentRouteName());
     }
@@ -107,7 +108,6 @@ class BaseSummoner extends Component
         $this->date_end = $this->filters->date_end;
         $this->filter_encounters = $this->filters->filter_encounters;
     }
-
 
     public function updateSummoner(bool $full = false)
     {

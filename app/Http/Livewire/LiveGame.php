@@ -50,8 +50,9 @@ class LiveGame extends Component
         try {
             $live_game_data = $this->me->getLiveGame();
         } catch (RiotApiForbiddenException $e) {
-            Log::error('RiotApiForbiddenException: ' . $e->getMessage());
-            Session::flash('error', 'RiotApiForbiddenException: ' . $e->getMessage());
+            Log::error('RiotApiForbiddenException: '.$e->getMessage());
+            Session::flash('error', 'RiotApiForbiddenException: '.$e->getMessage());
+
             return;
         }
         if ($live_game_data == null) {

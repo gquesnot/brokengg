@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Data\FiltersData;
+use App\Enums\RankedType;
 use App\Traits\SummonerApi;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +27,8 @@ use Illuminate\Support\Facades\DB;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $auto_update
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerLeague[] $leagues
+ * @property-read int|null $leagues_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
  * @property-read int|null $matches_count
  *
@@ -221,5 +225,16 @@ class Summoner extends Model
     public function leagues(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(SummonerLeague::class, 'summoner_id', 'id');
+    }
+
+    public function bestLeague(): Attribute
+    {
+        return Attribute::make(
+            get:function () {
+                $type = $this->leagues->where('type', RankedType::SOLO)->first() ? RankedType::SOLO : RankedType::FLEX;
+
+                return $this->leagues->where('type', $type)->first();
+            }
+        );
     }
 }

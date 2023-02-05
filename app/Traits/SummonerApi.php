@@ -25,17 +25,16 @@ use Illuminate\Support\Str;
 
 trait SummonerApi
 {
-    public function updateMatches(): void
+    public function updateMatches(bool $force = false): void
     {
-        Log::info('Updating matches for ' . $this->name. " by " .request()->ip());
+        Log::info('Updating matches for '.$this->name.' by '.request()->ip());
         try {
-            $this->selfUpdate(true);
+            $this->selfUpdate($force);
             $this->updateMatchesIds();
             $this->updateMatchesData();
         } catch (RiotApiForbiddenException $e) {
-            Log::error('RiotApiForbiddenException: ' . $e->getMessage());
+            Log::error('RiotApiForbiddenException: '.$e->getMessage());
         }
-
     }
 
     /**
@@ -45,7 +44,7 @@ trait SummonerApi
     {
         $matches = Matche::whereUpdated(false)->get();
         foreach ($matches as $match) {
-            if (!$this->updateMatch($match)) {
+            if (! $this->updateMatch($match)) {
                 Matche::where('id', $match->id)->delete();
             }
         }

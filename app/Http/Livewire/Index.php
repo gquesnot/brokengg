@@ -44,11 +44,11 @@ class Index extends Component
         try {
             $summoner = Summoner::updateOrCreateByName($this->summonerName);
         } catch (RiotApiForbiddenException $e) {
-            Log::error('RiotApiForbiddenException: ' . $e->getMessage());
-            Session::flash('error', 'RiotApiForbiddenException: ' . $e->getMessage());
+            Log::error('RiotApiForbiddenException: '.$e->getMessage());
+            Session::flash('error', 'RiotApiForbiddenException: '.$e->getMessage());
+
             return;
         }
-
 
         return redirect()->route(TabEnum::MATCHES->value, ['summonerId' => $summoner->id]);
     }

@@ -4,10 +4,10 @@ namespace App\Data\match_timeline;
 
 use App\Data\champion\ChampionData;
 use App\Models\SummonerMatch;
-use App\Traits\WireableData;
 use Arr;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Concerns\WireableData;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -73,7 +73,7 @@ class ParticipantData extends Data
 
             ]);
         });
-//        dd($destroyed, $undo, $sold);
+
         return ParticipantData::from([
             'id' => $index,
             'name' => $participant->summoner->name,

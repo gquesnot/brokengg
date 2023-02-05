@@ -166,12 +166,13 @@ class RiotApi
         $response = Http::withoutVerifying()->withHeaders($this->getHeaders())->get($url, $params);
         if ($response->status() == 429) {
             sleep(30);
+
             return $this->get($url, $params);
         }
         if ($response->status() == 404 || $response->status() == 403) {
             throw new RiotApiForbiddenException("Riot API returned {$response->status()} for $url");
-
         }
+
         return $response->json();
     }
 
