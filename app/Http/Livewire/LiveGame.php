@@ -3,11 +3,14 @@
 namespace App\Http\Livewire;
 
 use App\Data\FiltersData;
+use App\Exceptions\RiotApiForbiddenException;
 use App\Models\Champion as ChampionModel;
 use App\Models\Summoner;
 use App\Models\Summoner as SummonerModel;
 use App\Traits\PaginateTrait;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 
 class LiveGame extends Component
@@ -43,10 +46,15 @@ class LiveGame extends Component
 
     public function loadLiveGame()
     {
-        $live_game_data = $this->me->getLiveGame();
+        $this->loaded = false;
+        try {
+            $live_game_data = $this->me->getLiveGame();
+        } catch (RiotApiForbiddenException $e) {
+            Log::error('RiotApiForbiddenException: ' . $e->getMessage());
+            Session::flash('error', 'RiotApiForbiddenException: ' . $e->getMessage());
+            return;
+        }
         if ($live_game_data == null) {
-            $this->loaded = false;
-
             return;
         }
 

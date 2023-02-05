@@ -17,33 +17,12 @@ class UpdateMatchesJob implements ShouldQueue, ShouldBeUnique
     use Queueable;
     use SerializesModels;
 
-    public function timeout()
-    {
-        return 60 * 60;
-    }
-
-    public function uniqueId()
-    {
-        return 1;
-    }
-
-    public function backoff()
-    {
-        return 30;
-    }
-
-    public function __construct(public ?int $summonerId)
+    public function __construct(public int $summonerId)
     {
     }
 
     public function handle()
     {
-        if (! $this->summonerId) {
-            Summoner::whereAutoUpdate(true)->cursor()->each(function ($summoner) {
-                $summoner->updateMatches();
-            });
-        } else {
-            Summoner::find($this->summonerId)->updateMatches();
-        }
+        Summoner::find($this->summonerId)->updateMatches();
     }
 }

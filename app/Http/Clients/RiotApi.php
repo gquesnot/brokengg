@@ -3,6 +3,7 @@
 namespace App\Http\Clients;
 
 use App\Data\match_timeline\ParticipantData;
+use App\Exceptions\RiotApiForbiddenException;
 use App\Models\Matche;
 use App\Models\Summoner;
 use App\Models\SummonerMatch;
@@ -21,7 +22,10 @@ class RiotApi
         $this->api_key = config('lol.api_key');
     }
 
-    public function getAllMatchIds(Summoner $summoner, $queuId = null, $startDate = null): Collection
+    /**
+     * @throws RiotApiForbiddenException
+     */
+    public function getAllMatchIds(Summoner $summoner, $queueId = null, $startDate = null): Collection
     {
         $res = new Collection();
         $offset = 0;
@@ -32,7 +36,7 @@ class RiotApi
         }
         $last_scanned_match = Str::of($summoner->last_scanned_match)->replaceFirst('EUW1_', '')->toInteger();
         while (true) {
-            $data = $this->getMatchIds($summoner, $queuId, $startDate, $limit, $offset);
+            $data = $this->getMatchIds($summoner, $queueId, $startDate, $limit, $offset);
             if ($data == null) {
                 break;
             }
@@ -64,6 +68,10 @@ class RiotApi
     }
 
     // SUMMONERS
+
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function getSummonerByName(string $summonerName)
     {
         $summonerName = urlencode($summonerName);
@@ -71,28 +79,45 @@ class RiotApi
         return $this->get("https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{$summonerName}");
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function getSummonerByPuuid(string $puuid)
     {
         return $this->get("https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/$puuid");
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function getSummonerById(string $summonerId)
     {
         return $this->get("https://euw1.api.riotgames.com/lol/summoner/v4/summoners/$summonerId");
     }
 
     //LEAGUES
+
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function getSummonerLeaguesById($encryptedSummonerId)
     {
         return $this->get("https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/{$encryptedSummonerId}");
     }
 
     //MATCHES
+
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function getMatchDetail($matchId)
     {
         return $this->get("https://europe.api.riotgames.com/lol/match/v5/matches/$matchId");
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function getMatchTimeline(Matche $match): Collection
     {
         $url = "https://europe.api.riotgames.com/lol/match/v5/matches/{$match->match_id}/timeline";
@@ -104,6 +129,9 @@ class RiotApi
         });
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function getMatchIds(Summoner $summoner, $queueId = null, $startDate = 1641592824, $limit = 100, $offset = 0)
     {
         $url = "https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{$summoner->puuid}/ids";
@@ -121,24 +149,33 @@ class RiotApi
     }
 
     // LIVE GAMES
+
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function getSummonerLiveGame(Summoner $summoner)
     {
         return $this->get("https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/$summoner->summoner_id");
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function get($url, $params = [])
     {
         $response = Http::withoutVerifying()->withHeaders($this->getHeaders())->get($url, $params);
         if ($response->status() == 429) {
             sleep(30);
-
             return $this->get($url, $params);
         }
+        if ($response->status() == 404 || $response->status() == 403) {
+            throw new RiotApiForbiddenException("Riot API returned {$response->status()} for $url");
 
+        }
         return $response->json();
     }
 
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return [
             'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101 Firefox/91.0',

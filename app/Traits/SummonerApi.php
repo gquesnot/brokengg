@@ -6,6 +6,7 @@ use App\Data\match_timeline\PerksData;
 use App\Enums\Rank;
 use App\Enums\RankedType;
 use App\Enums\Tier;
+use App\Exceptions\RiotApiForbiddenException;
 use App\Http\Clients\RiotApi;
 use App\Models\Champion;
 use App\Models\Item;
@@ -19,27 +20,40 @@ use App\Models\SummonerLeague;
 use App\Models\SummonerMatch;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 trait SummonerApi
 {
     public function updateMatches(): void
     {
-        $this->selfUpdate(true);
-        $this->updateMatchesIds();
-        $this->updateMatchesData();
+        Log::info('Updating matches for ' . $this->name. " by " .request()->ip());
+        try {
+            $this->selfUpdate(true);
+            $this->updateMatchesIds();
+            $this->updateMatchesData();
+        } catch (RiotApiForbiddenException $e) {
+            Log::error('RiotApiForbiddenException: ' . $e->getMessage());
+        }
+
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     private function updateMatchesData(): void
     {
         $matches = Matche::whereUpdated(false)->get();
         foreach ($matches as $match) {
-            if (! $this->updateMatch($match)) {
+            if (!$this->updateMatch($match)) {
                 Matche::where('id', $match->id)->delete();
             }
         }
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     private function updateMatch(Matche $match): bool
     {
         $api = new RiotApi();
@@ -149,6 +163,9 @@ trait SummonerApi
         return true;
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     private function updateMatchesIds(): void
     {
         $riotApi = new RiotApi();
@@ -176,6 +193,9 @@ trait SummonerApi
         ]);
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public static function updateOrCreateByName(string $summonerName, bool $force = false): ?Summoner
     {
         $api = new RiotApi();
@@ -188,6 +208,9 @@ trait SummonerApi
         return $summoner;
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public static function updateOrCreateByPuuid(string $puuid, bool $force = false): ?Summoner
     {
         $api = new RiotApi();
@@ -200,6 +223,9 @@ trait SummonerApi
         return $summoner;
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public static function updateOrCreateById(string $summonerId, bool $force = false): ?Summoner
     {
         $api = new RiotApi();
@@ -212,11 +238,17 @@ trait SummonerApi
         return $summoner;
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function selfUpdate(bool $force = false): void
     {
-        Summoner::updateOrCreateById($this->summoner_id);
+        Summoner::updateOrCreateById($this->summoner_id, $force);
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     private static function updateSummoner(?array $summonerData): ?Summoner
     {
         if (! $summonerData) {
@@ -237,6 +269,9 @@ trait SummonerApi
         return $summoner;
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function updateLeagues(): void
     {
         $api = new RiotApi();
@@ -255,6 +290,9 @@ trait SummonerApi
         }
     }
 
+    /**
+     * @throws RiotApiForbiddenException
+     */
     public function getLiveGame(): array|null
     {
         $api = new RiotApi();

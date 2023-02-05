@@ -3,9 +3,11 @@
 namespace App\Http\Livewire;
 
 use App\Enums\TabEnum;
+use App\Exceptions\RiotApiForbiddenException;
 use App\Http\Controllers\SyncLolController;
 use App\Models\Summoner;
 use App\Traits\FlashTrait;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 
@@ -39,7 +41,14 @@ class Index extends Component
 
     public function searchSummoner()
     {
-        $summoner = Summoner::updateOrCreateByName($this->summonerName);
+        try {
+            $summoner = Summoner::updateOrCreateByName($this->summonerName);
+        } catch (RiotApiForbiddenException $e) {
+            Log::error('RiotApiForbiddenException: ' . $e->getMessage());
+            Session::flash('error', 'RiotApiForbiddenException: ' . $e->getMessage());
+            return;
+        }
+
 
         return redirect()->route(TabEnum::MATCHES->value, ['summonerId' => $summoner->id]);
     }

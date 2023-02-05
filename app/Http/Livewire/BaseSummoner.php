@@ -4,11 +4,13 @@ namespace App\Http\Livewire;
 
 use App\Data\FiltersData;
 use App\Enums\TabEnum;
+use App\Exceptions\RiotApiForbiddenException;
 use App\Jobs\UpdateMatchesJob;
 use App\Models\Summoner as SummonerModel;
 use App\Models\Version;
 use App\Traits\FlashTrait;
 use App\Traits\QueryParamsTrait;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use Livewire\Component;
@@ -77,7 +79,11 @@ class BaseSummoner extends Component
         if (! $this->summoner) {
             return redirect()->route('home');
         }
-        $this->summoner->selfUpdate();
+        try {
+            $this->summoner->selfUpdate();
+        } catch (RiotApiForbiddenException $e) {
+            Log::error('RiotApiForbiddenException: ' . $e->getMessage());
+        }
         $this->tab = TabEnum::from(Route::currentRouteName());
     }
 
@@ -102,12 +108,6 @@ class BaseSummoner extends Component
         $this->filter_encounters = $this->filters->filter_encounters;
     }
 
-    public function fullUpdateSummoner()
-    {
-        $this->summoner->last_scanned_match = null;
-        $this->summoner->save();
-        $this->updateSummoner();
-    }
 
     public function updateSummoner(bool $full = false)
     {
