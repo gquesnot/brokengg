@@ -115,7 +115,7 @@ class BaseSummoner extends Component
             $this->summoner->last_scanned_match = null;
             $this->summoner->save();
         }
-        UpdateMatchesJob::dispatchSync($this->summoner->id);
+        UpdateMatchesJob::dispatch($this->summoner->id);
 
         Session::flash('success', 'Summoner updating ...');
     }
