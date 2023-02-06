@@ -46,7 +46,7 @@ trait SummonerApi
 
         foreach ($matches as $match) {
             if (! $this->updateMatch($match)) {
-                Matche::where('id', $match->id)->delete();
+                $match->delete();
             }
         }
     }
