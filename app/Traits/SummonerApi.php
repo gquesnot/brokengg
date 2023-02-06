@@ -27,7 +27,7 @@ trait SummonerApi
 {
     public function updateMatches(bool $force = false): void
     {
-        Log::info('Updating matches for '.$this->name.' by '.request()->ip());
+        Log::info('Updating matches for '.$this->name);
         try {
             $this->selfUpdate($force);
             $this->updateMatchesIds();
@@ -43,6 +43,7 @@ trait SummonerApi
     private function updateMatchesData(): void
     {
         $matches = Matche::whereUpdated(false)->get();
+
         foreach ($matches as $match) {
             if (! $this->updateMatch($match)) {
                 Matche::where('id', $match->id)->delete();

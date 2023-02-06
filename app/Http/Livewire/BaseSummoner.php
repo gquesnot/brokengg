@@ -95,6 +95,7 @@ class BaseSummoner extends Component
 
     public function toggleAutoUpdate()
     {
+        Log::info('Toggle auto update for '.$this->summoner->name.' by '.request()->ip());
         $this->summoner->auto_update = ! $this->summoner->auto_update;
         $this->summoner->save();
     }
@@ -115,6 +116,7 @@ class BaseSummoner extends Component
             $this->summoner->last_scanned_match = null;
             $this->summoner->save();
         }
+        Log::info('Updating matches for '.$this->summoner->name.' by '.request()->ip());
         UpdateMatchesJob::dispatch($this->summoner->id);
 
         Session::flash('success', 'Summoner updating ...');
