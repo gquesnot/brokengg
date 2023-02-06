@@ -24,9 +24,9 @@ class CompleteSummonerJob implements ShouldQueue
     public function handle()
     {
         try {
-            $summoner_not_founds = Summoner::whereComplete(false)->pluck('id')->toArray();
+            $summoner_not_founds = Summoner::whereComplete(false)->pluck('id');
             $most_found_summoner = SummonerMatch::groupBy('summoner_id')
-                ->whereNotIn('summoner_id', $summoner_not_founds)
+                ->whereIn('summoner_id', $summoner_not_founds)
                 ->select(DB::raw('summoner_id, count(*) as count'))
                 ->orderByDesc('count')
                 ->limit(15)
