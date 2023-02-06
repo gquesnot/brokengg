@@ -185,7 +185,7 @@ trait SummonerApi
 
     public static function updateOrCreateWithParticipantData(array $participantData): Summoner
     {
-        $summoner = Summoner::whereSummonerId($participantData['summonerId'])->first();
+        $summoner = Summoner::wherePuuid($participantData['puuid'])->first();
         if ($summoner && $summoner->summoner_level < $participantData['summonerLevel']) {
             $summoner->update([
                 'name' => $participantData['summonerName'],
