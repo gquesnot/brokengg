@@ -21,7 +21,7 @@ trait QueryParamsTrait
                 }
             }
         }
-        if (!isEmpty($result) > 0) {
+        if (!empty($result) > 0) {
             return '?' . http_build_query($result);
         }
         return "";
