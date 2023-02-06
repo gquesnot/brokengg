@@ -194,7 +194,7 @@ trait SummonerApi
                 'summoner_level' => $participantData['summonerLevel'],
             ]);
         }
-        else{
+        elseif (!$summoner){
             Summoner::create([
                 'puuid' => $participantData['puuid'],
                 'summoner_id' => $participantData['summonerId'],
