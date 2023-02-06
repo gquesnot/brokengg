@@ -312,7 +312,7 @@ trait SummonerApi
     {
         $api = new RiotApi();
         $live_game_data = $api->getSummonerLiveGame($this);
-        if (Arr::has($live_game_data, 'status')) {
+        if (!$live_game_data) {
             return null;
         }
 
