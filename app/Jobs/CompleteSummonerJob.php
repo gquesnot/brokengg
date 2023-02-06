@@ -29,7 +29,7 @@ class CompleteSummonerJob implements ShouldQueue
                 ->whereIn('summoner_id', $summoner_not_founds)
                 ->select(DB::raw('summoner_id, count(*) as count'))
                 ->orderByDesc('count')
-                ->limit(15)
+                ->limit(10)
                 ->pluck('summoner_id')
                 ->toArray();
             Summoner::whereIn('id', $most_found_summoner)->cursor()->each(function ($summoner) {
