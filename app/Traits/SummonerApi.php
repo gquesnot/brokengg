@@ -196,7 +196,7 @@ trait SummonerApi
                 ]);
             }
         } else {
-            Summoner::create([
+            $summoner = Summoner::create([
                 'puuid' => $participantData['puuid'],
                 'summoner_id' => $participantData['summonerId'],
                 'name' => $participantData['summonerName'],
