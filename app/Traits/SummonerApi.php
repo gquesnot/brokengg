@@ -62,6 +62,9 @@ trait SummonerApi
             return false;
         }
         $mode = Mode::where('name', $match_info['gameMode'])->first();
+        if ($mode == null) {
+            return false;
+        }
         // clear SummonerMatch and items related to this match
         ItemSummonerMatch::whereIn('summoner_match_id', $match->participants()->pluck('id'))->delete();
         $match->participants()->delete();
