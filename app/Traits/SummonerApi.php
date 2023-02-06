@@ -63,7 +63,7 @@ trait SummonerApi
             return false;
         }
         $mode = Mode::where('name', $match_info['gameMode'])->first();
-        if ($mode == null) {
+        if ($mode == null || $match_info['queueId'] == 0) {
             return false;
         }
         // clear SummonerMatch and items related to this match
