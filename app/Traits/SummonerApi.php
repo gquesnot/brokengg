@@ -42,11 +42,11 @@ trait SummonerApi
      */
     private function updateMatchesData(): void
     {
-        $matches = Matche::whereUpdated(false)->get();
+        $matches = Matche::whereUpdated(false)->whereIsTrashed(false)->get();
 
         foreach ($matches as $match) {
             if (! $this->updateMatch($match)) {
-                $match->delete();
+                $match->update(['is_trashed' => true]);
             }
         }
     }

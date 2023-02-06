@@ -55,6 +55,11 @@ class Matche extends Model
         'match_creation',
         'match_end',
         'match_duration',
+        'is_trashed'
+    ];
+
+    protected $casts = [
+        'is_trashed' => 'boolean'
     ];
 
     public $dates = [
