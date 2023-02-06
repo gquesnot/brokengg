@@ -187,14 +187,15 @@ trait SummonerApi
     public static function updateOrCreateWithParticipantData(array $participantData): Summoner
     {
         $summoner = Summoner::wherePuuid($participantData['puuid'])->first();
-        if ($summoner && $summoner->summoner_level < $participantData['summonerLevel']) {
-            $summoner->update([
-                'name' => $participantData['summonerName'],
-                'profile_icon_id' => $participantData['profileIcon'],
-                'summoner_level' => $participantData['summonerLevel'],
-            ]);
-        }
-        elseif (!$summoner){
+        if ($summoner) {
+            if ($summoner->summoner_level < $participantData['summonerLevel']) {
+                $summoner->update([
+                    'name' => $participantData['summonerName'],
+                    'profile_icon_id' => $participantData['profileIcon'],
+                    'summoner_level' => $participantData['summonerLevel'],
+                ]);
+            }
+        } else {
             Summoner::create([
                 'puuid' => $participantData['puuid'],
                 'summoner_id' => $participantData['summonerId'],
@@ -203,6 +204,7 @@ trait SummonerApi
                 'summoner_level' => $participantData['summonerLevel'],
             ]);
         }
+
         return $summoner;
     }
 

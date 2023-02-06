@@ -27,9 +27,9 @@ use Illuminate\Support\Facades\DB;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $auto_update
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerLeague[] $leagues
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SummonerLeague> $leagues
  * @property-read int|null $leagues_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $matches
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SummonerMatch> $matches
  * @property-read int|null $matches_count
  *
  * @method static Builder|Summoner newModelQuery()

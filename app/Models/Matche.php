@@ -21,9 +21,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $match_duration
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property bool $is_trashed
  * @property-read \App\Models\Map|null $map
  * @property-read \App\Models\Mode|null $mode
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\SummonerMatch[] $participants
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SummonerMatch> $participants
  * @property-read int|null $participants_count
  * @property-read \App\Models\Queue|null $queue
  *
@@ -33,6 +34,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder|Matche query()
  * @method static Builder|Matche whereCreatedAt($value)
  * @method static Builder|Matche whereId($value)
+ * @method static Builder|Matche whereIsTrashed($value)
  * @method static Builder|Matche whereMapId($value)
  * @method static Builder|Matche whereMatchCreation($value)
  * @method static Builder|Matche whereMatchDuration($value)
@@ -55,11 +57,11 @@ class Matche extends Model
         'match_creation',
         'match_end',
         'match_duration',
-        'is_trashed'
+        'is_trashed',
     ];
 
     protected $casts = [
-        'is_trashed' => 'boolean'
+        'is_trashed' => 'boolean',
     ];
 
     public $dates = [

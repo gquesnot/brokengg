@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\DB;
  * @property int $penta_kills
  * @property \Spatie\LaravelData\Contracts\BaseData|null $perks
  * @property-read \App\Models\Champion|null $champion
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Item[] $items
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Item> $items
  * @property-read int|null $items_count
  * @property-read \App\Models\Matche|null $match
  * @property-read \App\Models\Summoner|null $summoner
