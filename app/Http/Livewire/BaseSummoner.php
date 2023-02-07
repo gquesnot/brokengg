@@ -125,10 +125,10 @@ class BaseSummoner extends Component
                 UpdateMatchesJob::dispatch($this->summoner->id);
                 Session::flash('success', 'Summoner updating ...');
             },
-            30
+            10
         );
         if (! $executed) {
-            Session::flash('error', 'You can only update summoner every 30 seconds');
+            Session::flash('error', 'You can only update a summoner every 10 seconds');
         }
 
 
