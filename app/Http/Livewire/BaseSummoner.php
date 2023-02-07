@@ -11,6 +11,7 @@ use App\Models\Version;
 use App\Traits\FlashTrait;
 use App\Traits\QueryParamsTrait;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use Livewire\Component;
@@ -112,14 +113,26 @@ class BaseSummoner extends Component
 
     public function updateSummoner(bool $full = false)
     {
-        if ($full) {
-            $this->summoner->last_scanned_match = null;
-            $this->summoner->save();
+        $executed  = RateLimiter::attempt(
+            'updateSummoner_'.request()->ip(),
+            1,
+            function () use ($full) {
+                if ($full) {
+                    $this->summoner->last_scanned_match = null;
+                    $this->summoner->save();
+                }
+                Log::info('Updating matches for '.$this->summoner->name.' by '.request()->ip());
+                UpdateMatchesJob::dispatch($this->summoner->id);
+                Session::flash('success', 'Summoner updating ...');
+            },
+            30
+        );
+        if (! $executed) {
+            Session::flash('error', 'You can only update summoner every 30 seconds');
         }
-        Log::info('Updating matches for '.$this->summoner->name.' by '.request()->ip());
-        UpdateMatchesJob::dispatch($this->summoner->id);
 
-        Session::flash('success', 'Summoner updating ...');
+
+
     }
 
     public function render()
