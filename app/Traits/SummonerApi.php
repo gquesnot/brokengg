@@ -16,7 +16,6 @@ use App\Models\Matche;
 use App\Models\Mode;
 use App\Models\Queue;
 use App\Models\Summoner;
-use App\Models\SummonerLeague;
 use App\Models\SummonerMatch;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -292,16 +291,22 @@ trait SummonerApi
         $api = new RiotApi();
         $leaguesData = $api->getSummonerLeaguesById($this->summoner_id);
         if (! empty($leaguesData)) {
+            $leagues = [];
             foreach ($leaguesData as $leagueData) {
                 $type = $leagueData['queueType'] == 'RANKED_SOLO_5x5' ? RankedType::SOLO : RankedType::FLEX;
-                SummonerLeague::updateOrCreate([
+                $rank = Rank::from($leagueData['rank']);
+                $tier = Tier::from(Str::lower($leagueData['tier']));
+                $rank_number = $tier->number() + $rank->number($tier);
+                $leagues[] = [
                     'summoner_id' => $this->id,
                     'type' => $type,
-                ], [
-                    'rank' => Rank::from($leagueData['rank']),
-                    'tier' => Tier::from(Str::lower($leagueData['tier'])),
-                ]);
+                    'rank' => $rank,
+                    'tier' => $tier,
+                    'rank_number' => $rank_number,
+                ];
             }
+            $this->leagues()->delete();
+            $this->leagues()->createMany($leagues);
         }
     }
 
@@ -312,7 +317,7 @@ trait SummonerApi
     {
         $api = new RiotApi();
         $live_game_data = $api->getSummonerLiveGame($this);
-        if (!$live_game_data) {
+        if (! $live_game_data) {
             return null;
         }
 

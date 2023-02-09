@@ -113,7 +113,7 @@ class BaseSummoner extends Component
 
     public function updateSummoner(bool $full = false)
     {
-        $executed  = RateLimiter::attempt(
+        $executed = RateLimiter::attempt(
             'updateSummoner_'.request()->ip(),
             1,
             function () use ($full) {
@@ -130,9 +130,6 @@ class BaseSummoner extends Component
         if (! $executed) {
             Session::flash('error', 'You can only update a summoner every 10 seconds');
         }
-
-
-
     }
 
     public function render()

@@ -2,8 +2,6 @@
 
 namespace App\Traits;
 
-use function PHPUnit\Framework\isEmpty;
-
 trait QueryParamsTrait
 {
     public function getParamsUrl(): string
@@ -21,9 +19,10 @@ trait QueryParamsTrait
                 }
             }
         }
-        if (!empty($result) > 0) {
-            return '?' . http_build_query($result);
+        if (! empty($result) > 0) {
+            return '?'.http_build_query($result);
         }
-        return "";
+
+        return '';
     }
 }
