@@ -57,7 +57,7 @@ class SyncLolController extends Controller
 
     public function dispatchLol()
     {
-        $this->dispatch(LolSyncJob::class);
+        $this->dispatch(new LolSyncJob());
     }
 
 
