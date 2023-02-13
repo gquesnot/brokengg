@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Console\Commands\lolSyncCommand;
 use App\Data\champion\ChampionStats;
 use App\Data\item\ItemMythicStats;
 use App\Data\item\ItemStats;
+use App\Jobs\LolSyncJob;
 use App\Models\Champion;
 use App\Models\Item;
 use App\Models\Map;
@@ -52,6 +54,13 @@ class SyncLolController extends Controller
         $this->syncQueues();
         //$this->downloadJsonsChampionsItems();
     }
+
+    public function dispatchLol()
+    {
+        $this->dispatch(LolSyncJob::class);
+    }
+
+
 
     private function syncVersion()
     {

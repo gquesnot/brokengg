@@ -20,7 +20,7 @@ Route::get('/summoner/{summonerId}/champions', \App\Http\Livewire\BaseSummoner::
 Route::get('/summoner/{summonerId}/encounters', \App\Http\Livewire\BaseSummoner::class)->name(\App\Enums\TabEnum::ENCOUNTERS->value);
 Route::get('/summoner/{summonerId}/live-game', \App\Http\Livewire\BaseSummoner::class)->name(\App\Enums\TabEnum::LIVE_GAME->value);
 Route::get('/summoner/{summonerId}/match-detail/{matchId}', \App\Http\Livewire\BaseSummoner::class)->name(\App\Enums\TabEnum::MATCH_DETAIL->value);
-Route::get('/sync', [\App\Http\Controllers\SyncLolController::class, 'index'])->name('sync');
+Route::get('/sync', [\App\Http\Controllers\SyncLolController::class, 'dispatchLol'])->name('sync');
 
 Route::middleware([
     'auth:sanctum',
