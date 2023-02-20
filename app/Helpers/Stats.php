@@ -33,7 +33,7 @@ class Stats
             $this->avg_kills = round($matches->sum('kills') / $this->game_played, 1);
             $this->avg_deaths = round($matches->sum('deaths') / $this->game_played, 1);
             $this->avg_assists = round($matches->sum('assists') / $this->game_played, 1);
-            $this->kda = round(($this->avg_kills + $this->avg_assists) / $this->avg_deaths, 1);
+            $this->kda = round(($this->avg_kills + $this->avg_assists) / ($this->avg_deaths != 0 ? $this->avg_deaths : 1), 1);
             $this->win_percent = $this->game_played > 0 ? round($this->game_won / $this->game_played * 100, 1) : 0;
         }
     }
