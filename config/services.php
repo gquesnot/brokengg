@@ -30,5 +30,11 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+    'riot' => [
+        'api_key' => env('RIOT_API_KEY'),
+        'max_match_count' => env('RIOT_MAX_MATCHES_COUNT'),
+        'min_match_date' => env('RIOT_MIN_MATCH_DATE'),
+        'lol_path' => env('RIOT_LOL_PATH'),
+    ]
 
 ];

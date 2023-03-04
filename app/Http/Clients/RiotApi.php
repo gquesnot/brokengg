@@ -19,7 +19,7 @@ class RiotApi
 
     public function __construct()
     {
-        $this->api_key = config('lol.api_key');
+        $this->api_key = config('services.riot.api_key');
     }
 
     /**

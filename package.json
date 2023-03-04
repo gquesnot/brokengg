@@ -31,8 +31,6 @@
         "@inertiajs/inertia": "^0.11.1",
         "@ryangjchandler/alpine-clipboard": "^2.2.0",
         "@ryangjchandler/alpine-tooltip": "^1.2.0",
-        "apexcharts": "^3.37.0",
-        "chart.js": "^4.2.0",
         "class-transformer": "^0.5.1",
         "es6-shim": "^0.35.6",
         "puppeteer": "^19.2.0",
@@ -40,7 +38,6 @@
         "puppeteer-extra": "^3.3.4",
         "puppeteer-extra-plugin-stealth": "^2.11.1",
         "reflect-metadata": "^0.1.13",
-        "select2": "^4.1.0-rc.0",
         "tippy.js": "^6.3.7"
     }
 }

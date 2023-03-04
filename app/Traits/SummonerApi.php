@@ -3,11 +3,20 @@
 namespace App\Traits;
 
 use App\Data\match_timeline\PerksData;
-use App\Enums\Rank;
-use App\Enums\RankedType;
-use App\Enums\Tier;
+use App\Data\RiotApi\LiveGameData;
+use App\Data\RiotApi\MatchDetail\ParticipantData;
+use App\Data\RiotApi\MatchDetailData;
+use App\Data\RiotApi\SummonerData;
+use App\Data\RiotApi\SummonerLeagueData;
 use App\Exceptions\RiotApiForbiddenException;
 use App\Http\Clients\RiotApi;
+use App\Http\Integrations\RiotApi\Requests\LiveGameRequest;
+use App\Http\Integrations\RiotApi\Requests\MatchDetailRequest;
+use App\Http\Integrations\RiotApi\Requests\MatchIdsRequest;
+use App\Http\Integrations\RiotApi\Requests\SummonerByIdRequest;
+use App\Http\Integrations\RiotApi\Requests\SummonerByNameRequest;
+use App\Http\Integrations\RiotApi\Requests\SummonerByPuuidRequest;
+use App\Http\Integrations\RiotApi\Requests\SummonerLeaguesRequest;
 use App\Models\Champion;
 use App\Models\Item;
 use App\Models\ItemSummonerMatch;
@@ -19,20 +28,21 @@ use App\Models\Summoner;
 use App\Models\SummonerMatch;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Spatie\LaravelData\DataCollection;
 
 trait SummonerApi
 {
     public function updateMatches(bool $force = false): void
     {
-        Log::info('Updating matches for '.$this->name);
+        Log::info('Updating matches for ' . $this->name);
         try {
             $this->selfUpdate($force);
             $this->updateMatchesIds();
             $this->updateMatchesData();
         } catch (RiotApiForbiddenException $e) {
-            Log::error('RiotApiForbiddenException: '.$e->getMessage());
+            Log::error('RiotApiForbiddenException: ' . $e->getMessage());
         }
     }
 
@@ -44,114 +54,62 @@ trait SummonerApi
         $matches = Matche::whereUpdated(false)->whereIsTrashed(false)->get();
 
         foreach ($matches as $match) {
-            if (! $this->updateMatch($match)) {
+            if (!$this->updateMatch($match)) {
                 $match->update(['is_trashed' => true]);
             }
         }
     }
 
-    /**
-     * @throws RiotApiForbiddenException
-     */
+
     private function updateMatch(Matche $match): bool
     {
-        $api = new RiotApi();
-        $match_data = $api->getMatchDetail($match->match_id);
-        $match_info = $match_data['info'];
-        if ($match_info['gameMode'] == '' || $match_info['mapId'] == 0 || $match_info['queueId'] == '') {
+        $match_data = self::getMatchDetailData($match->match_id);
+        if (
+            $match_data->info->game_mode == ''
+            || $match_data->info->map_id == 0
+            || $match_data->info->queue_id == ''
+            || $match_data->info->queue_id == 0
+            || Mode::where('name', $match_data->info->game_mode)->doesntExist()
+        ) {
             return false;
         }
-        $mode = Mode::where('name', $match_info['gameMode'])->first();
-        if ($mode == null || $match_info['queueId'] == 0) {
-            return false;
-        }
+
         // clear SummonerMatch and items related to this match
         ItemSummonerMatch::whereIn('summoner_match_id', $match->participants()->pluck('id'))->delete();
         $match->participants()->delete();
-        foreach ($match_info['participants'] as $participant) {
+        $match_data->info->participants->each(function (ParticipantData $participant) use ($match, $match_data) {
             $summoner = Summoner::updateOrCreateWithParticipantData($participant);
-            $champion_id = Champion::where('id', $participant['championId'])->pluck('id')->first();
-            if ($champion_id == null) {
-                break;
+            if (Champion::whereId($participant->champion_id)->doesntExist()) {
+                return;
             }
-            $stats = [
-                'physical_damage_dealt' => $participant['physicalDamageDealt'],
-                'physical_damage_dealt_to_champions' => $participant['physicalDamageDealtToChampions'],
-                'physical_damage_taken' => $participant['physicalDamageTaken'],
-                'magic_damage_dealt' => $participant['magicDamageDealt'],
-                'magic_damage_dealt_to_champions' => $participant['magicDamageDealtToChampions'],
-                'magic_damage_taken' => $participant['magicDamageTaken'],
-                'true_damage_dealt' => $participant['trueDamageDealt'],
-                'true_damage_dealt_to_champions' => $participant['trueDamageDealtToChampions'],
-                'true_damage_taken' => $participant['trueDamageTaken'],
-                'total_damage_dealt' => $participant['totalDamageDealt'],
-                'total_damage_dealt_to_champions' => $participant['totalDamageDealtToChampions'],
-                'total_damage_taken' => $participant['totalDamageTaken'],
-                'total_heal' => $participant['totalHeal'],
-                'total_time_cc_dealt' => $participant['totalTimeCCDealt'],
-                'total_time_spent_dead' => $participant['totalTimeSpentDead'],
-                'gold_earned' => $participant['goldEarned'],
-                'gold_spent' => $participant['goldSpent'],
-            ];
-            $summoner_match_attributes = [
-                'summoner_id' => $summoner->id,
+            $total_kills = collect($match_data->info->participants->filter(function (ParticipantData $p) use ($participant) {
+                return $p->team_id == $participant->team_id;
+            })->map(function (ParticipantData $p) {
+                return $p->kills;
+            })->toArray())->sum();
+            $summoner_match = $summoner->matches()->create([
                 'match_id' => $match->id,
-                'won' => $participant['win'],
-                'kills' => $participant['kills'],
-                'deaths' => $participant['deaths'],
-                'assists' => $participant['assists'],
-                'champion_id' => $champion_id,
-                'champ_level' => $participant['champLevel'],
-                'stats' => $stats,
-                'minions_killed' => $participant['totalMinionsKilled'],
-                'largest_killing_spree' => $participant['largestKillingSpree'],
-                'double_kills' => $participant['doubleKills'],
-                'triple_kills' => $participant['tripleKills'],
-                'quadra_kills' => $participant['quadraKills'],
-                'penta_kills' => $participant['pentaKills'],
-            ];
-
-            if (isset($participant['challenges'])) {
-                $summoner_match_attributes['challenges'] = $participant['challenges'];
-            }
-            $kda = $participant['kills'] + $participant['assists'];
-            if ($participant['deaths'] > 0) {
-                $kda = $kda / $participant['deaths'];
-            }
-            $summoner_match_attributes['perks'] = PerksData::from([
-                'offense' => $participant['perks']['statPerks']['offense'],
-                'defense' => $participant['perks']['statPerks']['defense'],
-                'flex' => $participant['perks']['statPerks']['flex'],
+                'won' => $participant->win,
+                'kills' => $participant->kills,
+                'deaths' => $participant->deaths,
+                'assists' => $participant->assists,
+                'champion_id' => $participant->champion_id,
+                'champ_level' => $participant->champ_level,
+                'participant_data' => $participant->toArray(),
+                'minions_killed' => $participant->total_minions_killed,
+                'perks' => $participant->perks->stat_perks,
+                'kda' => $participant->getKda(),
+                'kill_participation' => $participant->getKillParticipation($total_kills),
             ]);
-            $summoner_match_attributes['kda'] = $kda;
-            $all_game_kills = $match_info['teams'][($participant['teamId'] == 100 ? 0 : 1)]['objectives']['champion']['kills'];
-            $summoner_match_attributes['kill_participation'] = $participant['kills'] + $participant['assists'];
-            if ($all_game_kills > 0) {
-                $summoner_match_attributes['kill_participation'] = round($summoner_match_attributes['kill_participation'] / $all_game_kills, 2);
-            }
-            $sm = SummonerMatch::create($summoner_match_attributes);
+            $summoner_match->items()->createMany($participant->getItems());
+        });
 
-            $items = [];
-            for ($i = 0; $i < 6; $i++) {
-                $item_id = Arr::get($participant, 'item'.$i, 0);
-                if ($item_id == 0 || ! Item::whereId($item_id)->exists()) {
-                    continue;
-                }
-                $items[] = [
-                    'summoner_match_id' => $sm->id,
-                    'item_id' => $item_id,
-                    'position' => $i,
-                ];
-            }
-            ItemSummonerMatch::insert($items);
-        }
+        $match->mode_id = Mode::where('name', $match_data->info->game_mode)->first()->id;
+        $match->map_id = $match_data->info->map_id;
+        $match->queue_id = $match_data->info->queue_id;
 
-        $match->mode_id = $mode->id;
-        $match->map_id = $match_info['mapId'];
-        $match->queue_id = $match_info['queueId'];
-
-        $game_start = Carbon::createFromTimestamp($match_info['gameCreation'] / 1000);
-        $game_duration = Carbon::createFromTimestamp($match_info['gameDuration']);
+        $game_start = Carbon::createFromTimestamp($match_data->info->game_start_timestamp / 1000);
+        $game_duration = Carbon::createFromTimestamp($match_data->info->game_duration);
         $game_end = $game_start->copy()
             ->addSeconds($game_duration->second)
             ->addMinutes($game_duration->minute)
@@ -161,19 +119,18 @@ trait SummonerApi
         $match->match_end = $game_end->format('Y-m-d H:i:s');
         $match->updated = true;
         $match->save();
-
         return true;
     }
 
-    /**
-     * @throws RiotApiForbiddenException
-     */
-    private function updateMatchesIds(): void
+    public function updateMatchesIds(): void
     {
-        $riotApi = new RiotApi();
-        $matches_ids = $riotApi->getAllMatchIds($this);
+
+        $matches_ids = self::getMatchIdsData($this->puuid, $this->last_scanned_match);
+
         $founds = Matche::whereIn('match_id', $matches_ids)->pluck('match_id');
         $matches_ids = $matches_ids->diff($founds);
+        $this->last_scanned_match = $matches_ids->first();
+        $this->save();
         if ($matches_ids->isNotEmpty()) {
             Matche::insert($matches_ids->map(function ($match_id) {
                 return [
@@ -183,152 +140,173 @@ trait SummonerApi
         }
     }
 
-    public static function updateOrCreateWithParticipantData(array $participantData): Summoner
+    public static function updateOrCreateWithParticipantData(ParticipantData $participant_data): Summoner
     {
-        $summoner = Summoner::wherePuuid($participantData['puuid'])->first();
+        $summoner = Summoner::wherePuuid($participant_data->puuid)->first();
         if ($summoner) {
-            if ($summoner->summoner_level < $participantData['summonerLevel']) {
+            if ($summoner->summoner_level < $participant_data->summoner_level) {
                 $summoner->update([
-                    'name' => $participantData['summonerName'],
-                    'profile_icon_id' => $participantData['profileIcon'],
-                    'summoner_level' => $participantData['summonerLevel'],
+                    'name' => $participant_data->summoner_name,
+                    'profile_icon_id' => $participant_data->profile_icon,
+                    'summoner_level' => $participant_data->summoner_level,
                 ]);
             }
         } else {
             $summoner = Summoner::create([
-                'puuid' => $participantData['puuid'],
-                'summoner_id' => $participantData['summonerId'],
-                'name' => $participantData['summonerName'],
-                'profile_icon_id' => $participantData['profileIcon'],
-                'summoner_level' => $participantData['summonerLevel'],
+                'puuid' => $participant_data->puuid,
+                'name' => $participant_data->summoner_name,
+                'profile_icon_id' => $participant_data->profile_icon,
+                'summoner_level' => $participant_data->summoner_level,
             ]);
         }
 
         return $summoner;
     }
 
-    /**
-     * @throws RiotApiForbiddenException
-     */
     public static function updateOrCreateByName(string $summonerName, bool $force = false): ?Summoner
     {
-        $api = new RiotApi();
         $summoner = Summoner::whereName($summonerName)->first();
-        if ($force || ! $summoner || ! $summoner->complete || $summoner->updated_at->diffInDays(now()) > 7) {
-            $summonerData = $api->getSummonerByName($summonerName);
-            $summoner = Summoner::updateSummoner($summonerData);
+
+        if ($force || !$summoner || !$summoner->complete || $summoner->updated_at->diffInDays(now()) > 7) {
+            $summoner_data = self::getSummonerByNameData($summonerName);
+            if ($summoner_data) {
+                $summoner = Summoner::updateSummoner($summoner_data);
+            }
         }
 
         return $summoner;
     }
 
-    /**
-     * @throws RiotApiForbiddenException
-     */
+
     public static function updateOrCreateByPuuid(string $puuid, bool $force = false): ?Summoner
     {
-        $api = new RiotApi();
         $summoner = Summoner::wherePuuid($puuid)->first();
-        if ($force || ! $summoner || ! $summoner->complete || $summoner->updated_at->diffInDays(now()) > 7) {
-            $summonerData = $api->getSummonerByPuuid($puuid);
-            $summoner = Summoner::updateSummoner($summonerData);
+        if ($force || !$summoner || !$summoner->complete || $summoner->updated_at->diffInDays(now()) > 7) {
+            $summoner_data = self::getSummonerByPuuidData($puuid);
+            if ($summoner_data) {
+                $summoner = Summoner::updateSummoner($summoner_data);
+            }
         }
-
         return $summoner;
     }
 
-    /**
-     * @throws RiotApiForbiddenException
-     */
+
     public static function updateOrCreateById(string $summonerId, bool $force = false): ?Summoner
     {
-        $api = new RiotApi();
         $summoner = Summoner::whereSummonerId($summonerId)->first();
-        if ($force || ! $summoner || ! $summoner->complete || $summoner->updated_at->diffInDays(now()) > 7) {
-            $summonerData = $api->getSummonerById($summonerId);
-            $summoner = Summoner::updateSummoner($summonerData);
+        if ($force || !$summoner || !$summoner->complete || $summoner->updated_at->diffInDays(now()) > 7) {
+            $summoner_data = self::getSummonerByIdData($summonerId);
+            if ($summoner_data) {
+                $summoner = Summoner::updateSummoner($summoner_data);
+            }
         }
-
         return $summoner;
     }
 
-    /**
-     * @throws RiotApiForbiddenException
-     */
+
     public function selfUpdate(bool $force = false): void
     {
         Summoner::updateOrCreateById($this->summoner_id, $force);
     }
 
-    /**
-     * @throws RiotApiForbiddenException
-     */
-    private static function updateSummoner(?array $summonerData): ?Summoner
+
+    private static function updateSummoner(\App\Data\RiotApi\SummonerData $summoner_data): ?Summoner
     {
-        if (! $summonerData) {
-            return null;
-        }
         $summoner = Summoner::updateOrCreate([
-            'summoner_id' => $summonerData['id'],
-        ], [
-            'name' => $summonerData['name'],
-            'profile_icon_id' => $summonerData['profileIconId'],
-            'summoner_level' => $summonerData['summonerLevel'],
-            'puuid' => $summonerData['puuid'],
-            'account_id' => $summonerData['accountId'],
-            'complete' => true,
-        ]);
+            'summoner_id' => $summoner_data->id,
+        ], Arr::except($summoner_data->toArray(), ['id']));
         $summoner->updateLeagues();
 
         return $summoner;
     }
 
-    /**
-     * @throws RiotApiForbiddenException
-     */
+
     public function updateLeagues(): void
     {
-        $api = new RiotApi();
-        $leaguesData = $api->getSummonerLeaguesById($this->summoner_id);
-        if (! empty($leaguesData)) {
-            $leagues = [];
-            foreach ($leaguesData as $leagueData) {
-                $type = $leagueData['queueType'] == 'RANKED_SOLO_5x5' ? RankedType::SOLO : RankedType::FLEX;
-                $rank = Rank::from($leagueData['rank']);
-                $tier = Tier::from(Str::lower($leagueData['tier']));
-                $rank_number = $tier->number() + $rank->number($tier);
-                $leagues[] = [
-                    'summoner_id' => $this->id,
-                    'type' => $type,
-                    'rank' => $rank,
-                    'tier' => $tier,
-                    'rank_number' => $rank_number,
-                ];
-            }
-            $this->leagues()->delete();
-            $this->leagues()->createMany($leagues);
-        }
+        $leagues = self::getSummonerLeaguesData($this->summoner_id);
+        $leagues->each(function (SummonerLeagueData $league) {
+            $this->leagues()->updateOrCreate([
+                'type' => $league->type,
+            ], [
+                'rank' => $league->rank,
+                'tier' => $league->tier,
+                'rank_number' => $league->tier->number() + $league->rank->number($league->tier),
+            ]);
+        });
     }
 
-    /**
-     * @throws RiotApiForbiddenException
-     */
+
     public function getLiveGame(): array|null
     {
-        $api = new RiotApi();
-        $live_game_data = $api->getSummonerLiveGame($this);
-        if (! $live_game_data) {
+        try {
+            $live_game_data = self::getLiveGameData($this->summoner_id);
+            return [
+                'info' => [
+                    'queue' => Queue::whereId($live_game_data->game_queue_config_id)->first(),
+                    'mode' => Mode::whereId($live_game_data->game_mode)->first(),
+                    'map' => Map::whereId($live_game_data->map_id)->first(),
+                    'duration' => Carbon::createFromTimestamp($live_game_data->game_start_time / 1000)->diff(Carbon::now())->format('%H:%I:%S'),
+                ],
+                'participants' => $live_game_data->participants,
+            ];
+        } catch (\Exception $e) {
             return null;
         }
-
-        return [
-            'info' => [
-                'queue' => Queue::whereId($live_game_data['gameQueueConfigId'])->first(),
-                'mode' => Mode::whereId($live_game_data['gameMode'])->first(),
-                'map' => Map::whereId($live_game_data['mapId'])->first(),
-                'duration' => Carbon::createFromTimestamp($live_game_data['gameStartTime'] / 1000)->diff(Carbon::now())->format('%H:%I:%S'),
-            ],
-            'participants' => $live_game_data['participants'],
-        ];
     }
+
+
+    static function getMatchDetailData(string $match_id): ?MatchDetailData
+    {
+        $request = (new MatchDetailRequest(match_id: $match_id))->sendAndRetry();
+        if ($request->failed()) {
+            return null;
+        }
+        return $request->dto();
+    }
+
+
+    static function getSummonerByIdData(string $summoner_id): ?SummonerData{
+        $request = (new SummonerByIdRequest(summoner_id: $summoner_id))->sendAndRetry();
+        if ($request->failed()) {
+            return null;
+        }
+        return $request->dto();
+    }
+
+    static function getSummonerByNameData(string $summoner_name): ?SummonerData{
+        $request = (new SummonerByNameRequest(summoner_name: $summoner_name))->sendAndRetry();
+        if ($request->failed()) {
+            return null;
+        }
+        return $request->dto();
+    }
+
+    static function getSummonerByPuuidData(string $puuid): ?SummonerData{
+        $request = (new SummonerByPuuidRequest(puuid: $puuid))->sendAndRetry();
+        if ($request->failed()) {
+            return null;
+        }
+        return $request->dto();
+    }
+
+    static function getSummonerLeaguesData(string $summoner_id): ?DataCollection{
+        $request = (new SummonerLeaguesRequest(summoner_id: $summoner_id))->sendAndRetry();
+        if ($request->failed()) {
+            return null;
+        }
+        return $request->dto();
+    }
+
+    static function getLiveGameData(string $summoner_id): ?LiveGameData{
+        $request = (new LiveGameRequest(summoner_id: $summoner_id))->sendAndRetry();
+        if ($request->failed()) {
+            return null;
+        }
+        return $request->dto();
+    }
+
+    static function getMatchIdsData(string $puuid, ?string $last_scanned_match): Collection{
+        return collect((new MatchIdsRequest($puuid))->collect($last_scanned_match));
+    }
+
 }

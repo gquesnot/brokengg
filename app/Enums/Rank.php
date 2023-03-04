@@ -33,7 +33,7 @@ enum Rank: string
             return self::I;
         }
 
-        $number = $number % 4;
+        $number = ($number -1)  % 4;
 
         return match ($number) {
             0 => self::IV,

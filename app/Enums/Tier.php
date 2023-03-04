@@ -9,15 +9,15 @@ enum Tier: string
 {
     use EnumTrait;
 
-    case IRON = 'iron';
-    case BRONZE = 'bronze';
-    case SILVER = 'silver';
-    case GOLD = 'gold';
-    case PLATINUM = 'platinum';
-    case DIAMOND = 'diamond';
-    case MASTER = 'master';
-    case GRANDMASTER = 'grandmaster';
-    case CHALLENGER = 'challenger';
+    case IRON = 'IRON';
+    case BRONZE = 'BRONZE';
+    case SILVER = 'SILVER';
+    case GOLD = 'GOLD';
+    case PLATINUM = 'PLATINUM';
+    case DIAMOND = 'DIAMOND';
+    case MASTER = 'MASTER';
+    case GRANDMASTER = 'GRANDMASTER';
+    case CHALLENGER = 'CHALLENGER';
 
     public function name(): string
     {
